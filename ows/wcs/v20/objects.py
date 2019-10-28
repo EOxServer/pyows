@@ -1,0 +1,3 @@
+class GetCoverage:
+    coverageid: str
+    
