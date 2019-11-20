@@ -1,9 +1,9 @@
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 # Project: EOxServer <http://eoxserver.org>
 # Authors: Fabian Schindler <fabian.schindler@eox.at>
 #
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (C) 2014 EOX IT Services GmbH
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +23,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """ This module provides base functionality for any other decoder class.
 """
@@ -111,7 +111,7 @@ class Choice:
         for choice in self.choices:
             try:
                 return choice.__get__(decoder, decoder_class)
-            except:
+            except Exception:
                 continue
         raise NoChoiceResultException
 
@@ -130,7 +130,7 @@ class Exclusive:
             try:
                 result = choice.__get__(decoder, decoder_class)
                 num += 1
-            except:
+            except Exception:
                 continue
 
         if num != 1:
@@ -196,7 +196,8 @@ class fixed:
     def __call__(self, value):
         compare = value if self.case_sensitive else value.lower()
         if self.value != compare:
-            raise ValueError("Value mismatch, expected %s, got %s." %
+            raise ValueError(
+                "Value mismatch, expected %s, got %s." %
                 (self.value, value)
             )
 
@@ -216,7 +217,8 @@ class enum:
     def __call__(self, value):
         compare = value if self.case_sensitive else value.lower()
         if compare not in self.compare_values:
-            raise ValueError("Unexpected value '%s'. Expected one of: %s." %
+            raise ValueError(
+                "Unexpected value '%s'. Expected one of: %s." %
                 (value, ", ".join(map(lambda s: "'%s'" % s, self.values)))
             )
 
@@ -264,7 +266,7 @@ def boolean(raw):
     """ Functor to convert "true"/"false" to a boolean.
     """
     raw = raw.lower()
-    if not raw in ("true", "false"):
+    if raw not in ("true", "false"):
         raise ValueError("Could not parse a boolean value from '%s'." % raw)
     return raw == "true"
 
