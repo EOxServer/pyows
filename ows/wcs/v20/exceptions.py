@@ -1,0 +1,84 @@
+
+class InvalidSubsettingException(Exception):
+    """
+    This exception indicates an invalid WCS 2.0 subsetting parameter was
+    submitted.
+    """
+    code = "InvalidSubsetting"
+    locator = "subset"
+
+
+class InvalidSubsettingCrsException(Exception):
+    """
+    This exception indicates an invalid WCS 2.0 subsettingCrs parameter was
+    submitted.
+    """
+    code = "SubsettingCrs-NotSupported"
+    locator = "subsettingCrs"
+
+
+class InvalidOutputCrsException(Exception):
+    """
+    This exception indicates an invalid WCS 2.0 outputCrs parameter was
+    submitted.
+    """
+    code = "OutputCrs-NotSupported"
+    locator = "outputCrs"
+
+
+class InvalidScaleFactorException(Exception):
+    """ Error in ScaleFactor and ScaleAxis operations
+    """
+    code = "InvalidScaleFactor"
+
+    def __init__(self, scalefactor):
+        super().__init__(
+            "Scalefactor '%s' is not valid" % scalefactor
+        )
+        self.locator = scalefactor
+
+
+class InvalidScaleExtentException(Exception):
+    """ Error in ScaleExtent operations
+    """
+    code = "InvalidExtent"
+
+    def __init__(self, low, high):
+        super().__init__(
+            "ScaleExtent '%s:%s' is not valid" % (low, high)
+        )
+        self.locator = high
+
+
+class NoSuchCoverageException(Exception):
+    """ This exception indicates that the requested coverage(s) do not
+        exist.
+    """
+    code = "NoSuchCoverage"
+
+    # def __str__(self):
+    #     return "No such Coverage%s with ID: %s" % (
+    #         "" if len(self.items) == 1 else "s",
+    #         ", ".join(map(lambda i: "'%s'" % i, self.items))
+    #     )
+
+
+class NoSuchDatasetSeriesOrCoverageException(Exception):
+    """ This exception indicates that the requested coverage(s) or dataset
+        series do not exist.
+    """
+    code = "NoSuchDatasetSeriesOrCoverage"
+
+    # def __str__(self):
+    #     return "No such Coverage%s or Dataset Series with ID: %s" % (
+    #         " " if len(self.items) == 1 else "s",
+    #         ", ".join(map(lambda i: "'%s'" % i, self.items))
+    #     )
+
+
+class InterpolationMethodNotSupportedException(Exception):
+    """
+    This exception indicates a not supported interpolation method.
+    """
+    code = "InterpolationMethodNotSupported"
+    locator = "interpolation"
