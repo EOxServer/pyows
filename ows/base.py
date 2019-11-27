@@ -13,8 +13,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies of this Software or works derived from this Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies of this Software or works derived from this Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -211,7 +211,9 @@ class enum:
 
     def __init__(self, values, case_sensitive=True):
         self.values = values
-        self.compare_values = values if case_sensitive else [lower(v) for v in values]
+        self.compare_values = values if case_sensitive else [
+            lower(v) for v in values
+        ]
         self.case_sensitive = case_sensitive
 
     def __call__(self, value):
@@ -291,7 +293,8 @@ class BaseParameter(property):
     """ Abstract base class for XML, KVP or any other kind of parameter.
     """
 
-    def __init__(self, type=None, num=1, default=NO_DEFAULT, default_factory=None):
+    def __init__(self, type=None, num=1, default=NO_DEFAULT,
+                 default_factory=None):
         super().__init__(self.fget)
         self.type = type or str
         self.num = num

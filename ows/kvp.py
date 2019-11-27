@@ -13,8 +13,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies of this Software or works derived from this Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies of this Software or works derived from this Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -51,7 +51,8 @@ class Parameter(BaseParameter):
 
     key = None
 
-    def __init__(self, key=None, type=None, num=1, default=NO_DEFAULT, default_factory=None, locator=None):
+    def __init__(self, key=None, type=None, num=1, default=NO_DEFAULT,
+                 default_factory=None, locator=None):
         super().__init__(type, num, default, default_factory)
         self.key = key.lower() if key is not None else None
         self._locator = locator

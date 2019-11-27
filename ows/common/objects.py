@@ -1,6 +1,61 @@
+# ------------------------------------------------------------------------------
+#
+# Project: EOxServer <http://eoxserver.org>
+# Authors: Fabian Schindler <fabian.schindler@eox.at>
+#
+# ------------------------------------------------------------------------------
+# Copyright (C) 2019 EOX IT Services GmbH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies of this Software or works derived from this Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+# ------------------------------------------------------------------------------
+
+# flake8: noqa
+
 from enum import Enum
-from typing import List, Dict
+from typing import List, Tuple, Union
 from dataclasses import dataclass, field
+
+
+@dataclass
+class WGS84BoundingBox:
+    bbox: List[float]
+
+
+@dataclass
+class BoundingBox:
+    crs: str
+    bbox: List[float]
+
+
+@dataclass
+class Metadata:
+    href: str = None
+    role: str = None
+    arcrole: str = None
+    title: str = None
+    about: str = None
+
+
+@dataclass
+class Constraint:
+    name: str
+    allowed_values: List[Union[str, Tuple[str, str, str]]] = field(default_factory=dict)
 
 
 class HttpMethod(Enum):
@@ -12,17 +67,26 @@ class HttpMethod(Enum):
 class OperationMethod:
     method: HttpMethod
     service_url: str = None
-    constraints: Dict[str, List[str]] = field(default_factory=dict)
+    constraints: List[Constraint] = field(default_factory=list)
+
+    def __post_init__(self):
+        # allow usage of string identifiers for the HTTP method here as well,
+        # but convert to `HttpMethod`
+        if isinstance(self.method, str):
+            self.method = HttpMethod(self.method)
 
 
 @dataclass
 class Operation:
     name: str
     operation_methods: List[OperationMethod] = field(default_factory=lambda: [OperationMethod(method=HttpMethod.Get)])
+    constraints: List[Constraint] = field(default_factory=list)
 
 
 @dataclass
 class ServiceCapabilities:
+    update_sequence: str = None
+
     # ServiceIdentification fields
     title: str = None
     abstract: str = None
@@ -52,8 +116,12 @@ class ServiceCapabilities:
     country: str = None
     electronic_mail_address: str = None
 
+    online_resource: str = None
+
+    hours_of_service: str = None
+    contact_instructions: str = None
+
     role: str = ''
 
     # OperationsMetadata fields
-
     operations: List[Operation] = field(default_factory=list)

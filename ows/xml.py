@@ -2,9 +2,25 @@
 """
 
 from lxml import etree
-from lxml.builder import ElementMaker
+from lxml.builder import ElementMaker as _ElementMaker
 
 from .base import BaseParameter, BaseDecoder, NO_DEFAULT
+
+
+class ElementMaker(_ElementMaker):
+    """ Subclass of the original ElementMaker that automatically filters out
+        None values in sub-elements and attributes.
+    """
+    def __call__(self, tag, *args, **kwargs):
+        return super().__call__(tag, *[
+            arg
+            for arg in args
+            if arg is not None
+        ], **{
+            key: value
+            for key, value in kwargs.items()
+            if value is not None
+        })
 
 
 class NameSpace(object):
@@ -49,7 +65,7 @@ class NameSpace(object):
 class NameSpaceMap(dict):
     """ Helper object to ease the setup and management of namespace collections
         in both encoding and decoding. Can (and should) be passed as
-        ``namespaces`` attribute in :class:`eoxserver.core.decoders.xml.Decoder`
+        ``namespaces`` attribute in :class:`ows.xml.Decoder`
         subclasses.
 
         :param namespaces: a list of :class:`NameSpace` objects.
@@ -160,14 +176,18 @@ class Decoder(BaseDecoder):
         print(decoder.attr_b)
     """
 
-    namespaces = {}  # must be overriden if the XPath expressions use namespaces
+    # must be overriden if the XPath expressions use
+    # namespaces
+    namespaces = {}
 
     def __init__(self, tree):
         if isinstance(tree, (str, bytes)):
             try:
                 tree = etree.fromstring(tree)
             except etree.XMLSyntaxError as exc:
-                raise ValueError("Malformed XML document. Error was %s" % exc) from exc
+                raise ValueError(
+                    "Malformed XML document. Error was %s" % exc
+                ) from exc
         else:
             raise ValueError(f'Unsupported type {type(tree)}')
         self._tree = tree

@@ -1,3 +1,33 @@
+# ------------------------------------------------------------------------------
+#
+# Project: EOxServer <http://eoxserver.org>
+# Authors: Fabian Schindler <fabian.schindler@eox.at>
+#
+# ------------------------------------------------------------------------------
+# Copyright (C) 2019 EOX IT Services GmbH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies of this Software or works derived from this Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+# ------------------------------------------------------------------------------
+
+# flake8: noqa
+
+from datetime import datetime
 from textwrap import dedent
 from urllib.parse import unquote
 
@@ -5,11 +35,16 @@ from lxml import etree
 
 from .objects import (
     DescribeCoverageRequest, GetCoverageRequest, Trim, Slice,
-    ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation
+    ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation,
 )
+from ..objects import (
+    ServiceCapabilities, CoverageSummary, DatasetSeriesSummary
+)
+from ows.common.objects import WGS84BoundingBox, BoundingBox, Metadata
 from .encoders import (
     kvp_encode_describe_coverage, xml_encode_describe_coverage,
-    kvp_encode_get_coverage, xml_encode_get_coverage
+    kvp_encode_get_coverage, xml_encode_get_coverage,
+    xml_encode_capabilities
 )
 
 
@@ -224,3 +259,97 @@ def test_encode_get_coverage_xml():
       </int:Interpolation>
     </wcs:GetCoverage>
     """))
+
+# ------------------------------------------------------------------------------
+# Capabilities
+# ------------------------------------------------------------------------------
+
+
+def test_encode_capabilities():
+    capabilities = ServiceCapabilities()
+    print(xml_encode_capabilities(capabilities, pretty_print=True).value.decode('utf-8'))
+
+    capabilities = ServiceCapabilities.with_defaults_v20(
+        'http://provider.org',
+        update_sequence='2018-05-08',
+        title='Title',
+        abstract='Description',
+        keywords=[
+            'test', 'WCS',
+        ],
+        fees='None',
+        access_constraints=['None'],
+        provider_name='Provider Inc',
+        provider_site='http://provider.org',
+        individual_name='John Doe',
+        organisation_name='Provider Inc',
+        position_name='CTO',
+        phone_voice='+99/9008820',
+        phone_facsimile='+99/9008821',
+        delivery_point='Point du Hoc',
+        city='City',
+        administrative_area='Adminity',
+        postal_code='12345',
+        country='Cooontry',
+        electronic_mail_address='john.doe@provider.org',
+        online_resource='http://provider.org',
+        hours_of_service='09:00AM - 18:00PM',
+        contact_instructions='Just send a mail or a carrier pidgeon',
+        role='Chief',
+        formats_supported=[
+            'image/tiff',
+            'application/netcdf',
+        ],
+        crss_supported=[
+            'http://www.opengis.net/def/crs/EPSG/0/4326',
+            'http://www.opengis.net/def/crs/EPSG/0/3857',
+            'http://www.opengis.net/def/crs/EPSG/0/3035',
+        ],
+        interpolations_supported=[
+            'http://www.opengis.net/def/interpolation/OGC/1/average',
+            'http://www.opengis.net/def/interpolation/OGC/1/nearest-neighbour',
+            'http://www.opengis.net/def/interpolation/OGC/1/bilinear',
+            'http://www.opengis.net/def/interpolation/OGC/1/cubic',
+            'http://www.opengis.net/def/interpolation/OGC/1/cubic-spline',
+            'http://www.opengis.net/def/interpolation/OGC/1/lanczos',
+            'http://www.opengis.net/def/interpolation/OGC/1/mode',
+        ],
+        coverage_summaries=[
+            CoverageSummary('a',
+                coverage_subtype='RectifiedGridCoverage',
+                coverage_subtype_parent='RectifiedGridCoverageParent',
+                title='Nice Coverage "A"',
+                abstract='REally nife coverage!',
+                keywords=[
+                    'really',
+                    'nice',
+                    'coverage',
+                ],
+                wgs84_bbox=[WGS84BoundingBox([0, 0, 2, 2])],
+                bbox=[
+                    BoundingBox(
+                        'http://www.opengis.net/def/crs/EPSG/0/3857',
+                        [1, 2, 3, 4]
+                    )
+                ],
+                metadata=[
+                    Metadata(
+                        'http://provider.org/coverages/a/metadata.xml',
+                    )
+                ]
+            )
+        ],
+        dataset_series_summaries=[
+            DatasetSeriesSummary('series',
+                wgs84_bbox=WGS84BoundingBox([0, 0, 2, 2]),
+                time_period=(datetime(2018, 5, 10), datetime(2018, 5, 12)),
+                metadata=[
+                    Metadata(
+                        'http://provider.org/series/metadata.xml',
+                    )
+                ]
+            )
+        ]
+
+    )
+    print(xml_encode_capabilities(capabilities, pretty_print=True).value.decode('utf-8'))
