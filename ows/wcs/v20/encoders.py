@@ -436,34 +436,3 @@ def xml_encode_coverage_descriptions(coverage_descriptions: List[CoverageDescrip
     ])
 
     return Result.from_etree(root, **kwargs)
-
-
-from ows.gml.v32 import Grid, RectifiedGrid, Point, Field
-
-print(xml_encode_coverage_descriptions([
-    CoverageDescription(
-        identifier='a',
-        range_type=[
-            Field(
-                name='B01',
-                description='',
-                uom='W.m-2.sr-1.nm-1',
-                nil_values={
-                    0: 'http://www.opengis.net/def/nil/OGC/0/unknown'
-                },
-                allowed_values=[(0, 65535)],
-                # significant_figures=5,
-            )
-        ],
-        grid=RectifiedGrid(
-            identifier='a__grid', limits=([0, 0], [200, 200]),
-            origin=[2.5, 3.7],
-            offsets=[[1.0, 0], [0.0, 1.0]],
-            axis_names=['lat', 'lon'],
-            srs='http://www.opengis.net/def/crs/EPSG/0/4326',
-            uom_labels=['deg', 'deg'],
-        ),
-        native_format='image/tiff',
-        coverage_subtype='RectifiedDataset'
-    )
-], pretty_print=True).value.decode('utf-8'))

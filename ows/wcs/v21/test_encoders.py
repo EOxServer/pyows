@@ -25,33 +25,48 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from ows.xml import NameSpace, NameSpaceMap, ElementMaker, ns_xsi
-from ows.common.v20.namespaces import ns_ows, ns_xlink
-from ows.gml.v32 import ns_om, ns_gml, ns_gmlcov, ns_eop
+from datetime import datetime
+
+from .encoders import xml_encode_coverage_descriptions
+from ows.cis.v11 import Grid, Field, RegularAxis, IrregularAxis
+from ..objects import CoverageDescription
 
 
-# namespace declarations
-ns_ogc = NameSpace("http://www.opengis.net/ogc", "ogc")
-ns_wcs = NameSpace("http://www.opengis.net/wcs/2.0", "wcs")
-ns_crs = NameSpace("http://www.opengis.net/wcs/crs/1.0", "crs")
-ns_rsub = NameSpace("http://www.opengis.net/wcs/range-subsetting/1.0", "rsub")
-ns_eowcs = NameSpace("http://www.opengis.net/wcs/wcseo/1.0", "wcseo",
-                     "http://schemas.opengis.net/wcs/wcseo/1.0/wcsEOAll.xsd")
-ns_swe = NameSpace("http://www.opengis.net/swe/2.0", "swe")
-ns_int = NameSpace("http://www.opengis.net/wcs/interpolation/1.0", "int")
-ns_scal = NameSpace("http://www.opengis.net/wcs/scaling/1.0", "scal")
-
-# namespace map
-nsmap = NameSpaceMap(
-    ns_xlink, ns_ogc, ns_ows, ns_gml, ns_gmlcov, ns_wcs, ns_crs, ns_rsub,
-    ns_eowcs, ns_om, ns_eop, ns_swe, ns_int, ns_scal
-)
-
-# Element factories
-
-WCS = ElementMaker(namespace=ns_wcs.uri, nsmap=nsmap)
-CRS = ElementMaker(namespace=ns_crs.uri, nsmap=nsmap)
-SCAL = ElementMaker(namespace=ns_scal.uri, nsmap=nsmap)
-EOWCS = ElementMaker(namespace=ns_eowcs.uri, nsmap=nsmap)
-SWE = ElementMaker(namespace=ns_swe.uri, nsmap=nsmap)
-INT = ElementMaker(namespace=ns_int.uri, nsmap=nsmap)
+print(xml_encode_coverage_descriptions([
+    CoverageDescription(
+        identifier='a',
+        range_type=[
+            Field(
+                name='B01',
+                description='',
+                uom='W.m-2.sr-1.nm-1',
+                nil_values={
+                    0: 'http://www.opengis.net/def/nil/OGC/0/unknown'
+                },
+                allowed_values=[(0, 65535)],
+                # significant_figures=5,
+            )
+        ],
+        grid=Grid(
+            axes=[
+                RegularAxis(
+                    'lon', 'i', 0.0, 2.0, 0.1, uom='deg', size=20
+                ),
+                RegularAxis(
+                    'lat', 'j', 0.0, 2.0, 0.1, uom='deg', size=20
+                ),
+                IrregularAxis(
+                    'time', 'k', positions=[
+                        datetime(2019, 7, 18),
+                        datetime(2019, 7, 19),
+                        datetime(2019, 7, 20),
+                        datetime(2019, 7, 21),
+                    ], uom='ISO8601'
+                )
+            ],
+            srs='http://www.opengis.net/def/crs/EPSG/0/4326',
+        ),
+        native_format='image/tiff',
+        coverage_subtype='RectifiedDataset'
+    )
+], pretty_print=True).value.decode('utf-8'))

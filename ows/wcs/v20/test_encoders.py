@@ -33,6 +33,8 @@ from urllib.parse import unquote
 
 from lxml import etree
 
+from ows.common.objects import WGS84BoundingBox, BoundingBox, Metadata
+from ows.gml.v32 import Grid, RectifiedGrid, Point, Field
 from .objects import (
     DescribeCoverageRequest, GetCoverageRequest, Trim, Slice,
     ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation,
@@ -40,7 +42,6 @@ from .objects import (
 from ..objects import (
     ServiceCapabilities, CoverageSummary, DatasetSeriesSummary
 )
-from ows.common.objects import WGS84BoundingBox, BoundingBox, Metadata
 from .encoders import (
     kvp_encode_describe_coverage, xml_encode_describe_coverage,
     kvp_encode_get_coverage, xml_encode_get_coverage,
@@ -353,3 +354,33 @@ def test_encode_capabilities():
 
     )
     print(xml_encode_capabilities(capabilities, pretty_print=True).value.decode('utf-8'))
+
+
+def test_encode_coverage_descriptions():
+    print(xml_encode_coverage_descriptions([
+        CoverageDescription(
+            identifier='a',
+            range_type=[
+                Field(
+                    name='B01',
+                    description='',
+                    uom='W.m-2.sr-1.nm-1',
+                    nil_values={
+                        0: 'http://www.opengis.net/def/nil/OGC/0/unknown'
+                    },
+                    allowed_values=[(0, 65535)],
+                    # significant_figures=5,
+                )
+            ],
+            grid=RectifiedGrid(
+                identifier='a__grid', limits=([0, 0], [200, 200]),
+                origin=[2.5, 3.7],
+                offsets=[[1.0, 0], [0.0, 1.0]],
+                axis_names=['lat', 'lon'],
+                srs='http://www.opengis.net/def/crs/EPSG/0/4326',
+                uom_labels=['deg', 'deg'],
+            ),
+            native_format='image/tiff',
+            coverage_subtype='RectifiedDataset'
+        )
+    ], pretty_print=True).value.decode('utf-8'))
