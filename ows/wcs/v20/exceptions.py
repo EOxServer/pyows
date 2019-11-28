@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 #
-# Project: EOxServer <http://eoxserver.org>
+# Project: pyows <http://eoxserver.org>
 # Authors: Fabian Schindler <fabian.schindler@eox.at>
 #
 # ------------------------------------------------------------------------------
