@@ -1,90 +1,81 @@
+# ------------------------------------------------------------------------------
+#
+# Project: pyows <http://github.com/geopython/pycql>
+# Authors: Fabian Schindler <fabian.schindler@eox.at>
+#
+# ------------------------------------------------------------------------------
+# Copyright (C) 2019 EOX IT Services GmbH
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies of this Software or works derived from this Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+# ------------------------------------------------------------------------------
 
+"""Install pyows."""
+
+from setuptools import find_packages, setup
 import os
-from setuptools import setup
+import os.path
 
-# TODO: read READMe.rst and assign it to 'long_description'
-# def read(fname):
-#     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+# don't install dependencies when building win readthedocs
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
 
+# get version number
+# from https://github.com/mapbox/rasterio/blob/master/setup.py#L55
+with open(os.path.join(os.path.dirname(__file__), 'ows/__init__.py')) as f:
+    for line in f:
+        if line.find("__version__") >= 0:
+            version = line.split("=")[1].strip()
+            version = version.strip('"')
+            version = version.strip("'")
+            break
 
-def fullsplit(path, result=None):
-    """
-    Split a pathname into components (the opposite of os.path.join) in a
-    platform-neutral way.
-    """
-    if result is None:
-        result = []
-    head, tail = os.path.split(path)
-    if head == '':
-        return [tail] + result
-    if head == path:
-        return result
-    return fullsplit(head, [tail] + result)
+# use README.md for project long_description
+with open('README.md') as f:
+    readme = f.read()
 
 
-packages, data_files = [], []
-for dirpath, dirnames, filenames in os.walk('ows'):
-    for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'):
-            del dirnames[i]
-    if '__init__.py' in filenames:
-        packages.append('.'.join(fullsplit(dirpath)))
-    elif filenames:
-        data_files.append(
-            [dirpath, [os.path.join(dirpath, f) for f in filenames]]
-        )
+def parse_requirements(file):
+    return sorted(set(
+        line.partition('#')[0].strip()
+        for line in open(os.path.join(os.path.dirname(__file__), file))
+    ) - set(''))
 
-
-# On readthecods.org we don't want the reftools to be build
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if on_rtd:
-    ext_modules = []
 
 setup(
     name='pyows',
-    version='0.0.1',
-    packages=packages,
-    data_files=data_files,
-    include_package_data=True,
-    scripts=[
-    ],
-    install_requires=[
-        ],
-    zip_safe=False,
-
-    # Metadata
-    author="EOX IT Services GmbH",
-    author_email="office@eox.at",
-    maintainer="EOX IT Services GmbH",
-    maintainer_email="packages@eox.at",
-
-    description="OWS request/response encoding/decoding",
-    long_description="",
-
+    version=version,
+    description='OWS utilities',
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    author='Fabian Schindler',
+    author_email='fabian.schindler@eox.at',
+    url='https://github.com/eoxserver/pyows',
+    license='MIT',
+    packages=find_packages(),
+    package_dir={'static': 'static'},
+    install_requires=parse_requirements('requirements.txt') if not on_rtd else [],
     classifiers=[
-        'Development Status :: 0 - Production',
-        'Environment :: Console',
-        'Environment :: Web Environment',
-        'Intended Audience :: End Users/Desktop',
-        'Intended Audience :: Other Audience',
-        'Intended Audience :: System Administrators',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.8',
-        'Topic :: Database',
-        'Topic :: Internet',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Multimedia :: Graphics',
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering :: GIS',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: Scientific/Engineering :: Visualization',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
-
-    license="EOxServer Open License (MIT-style)",
-    keywords="Earth Observation, EO, OGC, WCS, WMS",
-    url="http://eoxserver.org/"
+    tests_require=['pytest']
 )
