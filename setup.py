@@ -13,8 +13,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies of this Software or works derived from this Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies of this Software or works derived from this Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -56,6 +56,8 @@ def parse_requirements(file):
     ) - set(''))
 
 
+install_requires = parse_requirements('requirements.txt') if not on_rtd else []
+
 setup(
     name='pyows',
     version=version,
@@ -68,7 +70,7 @@ setup(
     license='MIT',
     packages=find_packages(),
     package_dir={'static': 'static'},
-    install_requires=parse_requirements('requirements.txt') if not on_rtd else [],
+    install_requires=install_requires,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
