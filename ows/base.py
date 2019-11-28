@@ -381,6 +381,12 @@ class BaseDecoder:
 
         raise NotImplementedError
 
+    def map_params(self, params):
+        """ Map parameters, if necessary. Default implementation is
+            a no-op.
+        """
+        return params
+
     def collect_params(self):
         """ Collect all parameters. This will collect all values
             which are computed using properties.
@@ -396,5 +402,7 @@ class BaseDecoder:
         """ Collect all decoder parameters and construct the object.
         """
         return self.create_object(
-            self.collect_params()
+            self.map_params(
+                self.collect_params()
+            )
         )

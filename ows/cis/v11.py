@@ -39,6 +39,12 @@ ResolutionType = Union[str, int, float, timedelta]
 
 
 @dataclass
+class IndexAxis:
+    index_label: str
+    size: int
+
+
+@dataclass
 class RegularAxis:
     label: str
     index_label: str
@@ -140,6 +146,7 @@ def encode_domain_set(grid: Grid):
             *([
                 encode_axis(axis)
                 for axis in grid.axes
+                if not isinstance(axis, IndexAxis)
             ] + [
                 CIS('GridLimits',
                     *[

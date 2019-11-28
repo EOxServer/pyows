@@ -120,13 +120,13 @@ class ServiceCapabilities(common.ServiceCapabilities):
                 common.Operation(operation_name, [
                     common.OperationMethod(
                         common.HttpMethod.Get, service_url=service_url
-                    ),
+                    ) if allow_get else None,
                     common.OperationMethod(
                         common.HttpMethod.Post, service_url=service_url,
                         constraints=[
                             common.Constraint('PostEncoding', ['XML'])
                         ]
-                    )
+                    ) if allow_post else None,
                 ])
                 for operation_name in allowed_operations
             ]

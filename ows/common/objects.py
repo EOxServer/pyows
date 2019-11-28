@@ -33,6 +33,16 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class GetCapabilitiesRequest:
+    service: str
+    update_sequence: str = None
+    sections: List[str] = field(default_factory=list)
+    accept_versions: List[str] = field(default_factory=list)
+    accept_languages: List[str] = field(default_factory=list)
+    accept_formats: List[str] = field(default_factory=list)
+
+
+@dataclass
 class WGS84BoundingBox:
     bbox: List[float]
 
