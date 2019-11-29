@@ -7,7 +7,7 @@
 # Copyright (C) 2019 EOX IT Services GmbH
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated documentation files (the 'Software'), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -16,7 +16,7 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies of this Software or works derived from this Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlencode
@@ -55,14 +55,25 @@ class Result:
 
 
 def isoformat(dt: datetime, zulu=True):
-    """ Formats a datetime object to an ISO string. Timezone naive datetimes are
-        are treated as UTC Zulu. UTC Zulu is expressed with the proper "Z"
-        ending and not with the "+00:00" offset declaration.
+    ''' Formats a datetime object to an ISO string. Timezone naive datetimes are
+        are treated as UTC Zulu. UTC Zulu is expressed with the proper 'Z'
+        ending and not with the '+00:00' offset declaration.
 
         :param dt: the :class:`datetime.datetime` to encode
+        :param zulu: whether an offset of zero shall be abbreviated with ``Z``
         :returns: an encoded string
-    """
+    '''
     if not dt.utcoffset() and zulu:
         dt = dt.replace(tzinfo=None)
-        return dt.isoformat("T") + "Z"
-    return dt.isoformat("T")
+        return dt.isoformat('T') + 'Z'
+    return dt.isoformat('T')
+
+
+def duration(td: timedelta):
+    ''' Encode a timedelta as an ISO 8601 duration string.
+    '''
+    # TODO: better implementation with days, hours, minutes, seconds
+
+    days = td.days or ''
+    # hours = timedelta(seconds=td.seconds) // timedelta(hours=1)
+    return f'P{days}T{td.seconds}S'

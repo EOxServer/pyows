@@ -25,18 +25,12 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
-
-import re
-
 from ows import kvp, xml
-from ows.base import typelist, lower
+from ows.decoder import typelist, lower
 
-from .namespaces import ns_ows, nsmap
-from .exceptions import (
-    InvalidSubsettingException, InvalidScaleFactorException,
-    InvalidScaleExtentException,
-)
-from . import objects
+from .namespaces import nsmap
+
+from .. import objects
 
 
 # ------------------------------------------------------------------------------
@@ -45,17 +39,19 @@ from . import objects
 
 class KVPGetCapabilitiesDecoder(kvp.Decoder):
     object_class = objects.GetCapabilitiesRequest
-    updatesequence = kvp.Parameter(num="?")
+    service = kvp.Parameter('service')
+    update_sequence = kvp.Parameter('updatesequence', num="?")
     sections = kvp.Parameter(type=typelist(lower, ","), num="?", default_factory=list)
     accept_versions = kvp.Parameter('acceptversions', type=typelist(str, ","), num="?", default_factory=list)
     accept_formats = kvp.Parameter('acceptlanguages', type=typelist(str, ","), num="?", default_factory=list)
-    acceptl_anguages = kvp.Parameter('acceptformats', type=typelist(str, ","), num="?", default_factory=list)
+    accept_languages = kvp.Parameter('acceptformats', type=typelist(str, ","), num="?", default_factory=list)
 
 
 class XMLGetCapabilitiesDecoder(xml.Decoder):
     object_class = objects.GetCapabilitiesRequest
+    service = xml.Parameter("@service")
     sections = xml.Parameter("ows:Sections/ows:Section/text()", num="*", default_factory=list)
-    updatesequence = xml.Parameter("@updateSequence", num="?")
+    update_sequence = xml.Parameter("@updateSequence", num="?")
     accept_versions = xml.Parameter("ows:AcceptVersions/ows:Version/text()", num="*", default_factory=list)
     accept_formats = xml.Parameter("ows:AcceptFormats/ows:OutputFormat/text()", num="*", default_factory=list)
     accept_languages = xml.Parameter("ows:AcceptLanguages/ows:Language/text()", num="*", default_factory=list)
@@ -71,4 +67,3 @@ def kvp_decode_get_capabilities(kvp):
 def xml_decode_get_capabilities(xml):
     decoder = XMLGetCapabilitiesDecoder(xml)
     return decoder.decode()
-

@@ -30,7 +30,7 @@
 import re
 
 from ows import kvp, xml
-from ows.base import typelist
+from ows.decoder import typelist
 
 from .namespaces import ns_wcs, ns_rsub, ns_scal, nsmap
 from .exceptions import (

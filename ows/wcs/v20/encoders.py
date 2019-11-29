@@ -419,7 +419,10 @@ def xml_encode_coverage_descriptions(coverage_descriptions: List[CoverageDescrip
             encode_bounded_by(coverage_description.grid),
             WCS('CoverageId', coverage_description.identifier),
             # TODO: metadata
-            encode_domain_set(coverage_description.grid),
+            encode_domain_set(
+                coverage_description.grid,
+                f'{coverage_description.identifier}__grid'
+            ),
             encode_range_type(coverage_description.range_type),
             WCS('ServiceParameters',
                 WCS('CoverageSubtype', coverage_description.coverage_subtype),

@@ -32,49 +32,10 @@ from dataclasses import dataclass
 from ows.xml import ElementMaker, NameSpace, NameSpaceMap
 from ows.util import isoformat
 from ows.swe.v20 import Field, encode_data_record
-
-
-PositionType = Union[str, int, float, datetime, date]
-ResolutionType = Union[str, int, float, timedelta]
-
-
-@dataclass
-class IndexAxis:
-    index_label: str
-    size: int
-
-
-@dataclass
-class RegularAxis:
-    label: str
-    index_label: str
-    lower_bound: PositionType
-    upper_bound: PositionType
-    resolution: ResolutionType
-    uom: str
-    size: int
-
-
-@dataclass
-class IrregularAxis:
-    label: str
-    index_label: str
-    positions: List[PositionType]
-    uom: str
-
-    @property
-    def size(self):
-        return len(self.positions)
-
-
-AxisType = Union[RegularAxis, IrregularAxis]
-
-
-@dataclass
-class Grid:
-    axes: List[AxisType]
-    srs: str
-
+from ows.gml.objects import (
+    PositionType, AxisType,
+    Grid, IndexAxis, RegularAxis, IrregularAxis
+)
 
 ns_cis = NameSpace('http://www.opengis.net/cis/1.1/gml', 'cis')
 nsmap = NameSpaceMap(ns_cis)

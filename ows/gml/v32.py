@@ -32,34 +32,7 @@ from dataclasses import dataclass, field
 from ows.xml import ElementMaker, NameSpace, NameSpaceMap
 from ows.util import isoformat
 from ows.swe.v20 import Field, encode_data_record
-
-
-@dataclass
-class Point:
-    position: List[float]
-    description: str = None
-    identifier: str = None
-    name: str = None
-
-
-@dataclass
-class Grid:
-    identifier: str
-    limits: Tuple[List[int], List[int]]
-    axis_names: List[str]
-    srs: str = None
-    uom_labels: List[str] = None
-
-
-@dataclass
-class RectifiedGrid:
-    identifier: str
-    limits: Tuple[List[int], List[int]]
-    origin: List[float]
-    offsets: List[List[float]]
-    axis_names: List[str]
-    srs: str = None
-    uom_labels: List[str] = None
+from .objects import Grid, RegularAxis, IrregularAxis, IndexAxis
 
 
 # namespace declarations
@@ -90,35 +63,48 @@ def encode_time_period(begin_position, end_position, identifier):
         }
     )
 
-
-def encode_domain_set(grid: Union[Grid, RectifiedGrid]):
-    low, high = grid.limits
-    return GML('domainSet',
-        GML('RectifiedGrid' if isinstance(grid, RectifiedGrid) else 'Grid',
-            GML('identifier', grid.identifier),
-            GML('limits',
-                GML('GridLimits',
-                    GML('low', ' '.join(str(v) for v in low)),
-                    GML('high', ' '.join(str(v) for v in high)),
-                )
-            ),
-            GML('axisLabels', ' '.join(grid.axis_names)),
-            GML('origin',
-                ' '.join(str(v) for v in grid.origin)
-            ) if isinstance(grid, RectifiedGrid) else None,
-            *([
-                GML('offsetVector',
-                    ' '.join(str(v) for v in offset_vector)
-                ) for offset_vector in grid.offsets
-            ] if isinstance(grid, RectifiedGrid) else []),
-            **{
-                ns_gml('id'): grid.identifier,
-                'dimension': str(len(grid.axis_names)),
-                'srsName': grid.srs,
-                'uomLabels': ' '.join(grid.axis_names) if grid.axis_names else None
-            }
-        )
+def encode_grid(grid: Grid, identifier: str):
+    rectified = all(isinstance(axis, RegularAxis) for axis in grid.axes)
+    num_axes = len(grid.axes)
+    elem = GML('RectifiedGrid' if rectified else 'Grid',
+        GML('identifier', identifier),
+        GML('limits',
+            GML('GridLimits',
+                GML('low', ' '.join('0' for _ in grid.axes)),
+                GML('high', ' '.join(str(axis.size) for axis in grid.axes)),
+            )
+        ),
+        GML('axisLabels', ' '.join(axis.label for axis in grid.axes)),
+        **{
+            ns_gml('id'): identifier,
+            'dimension': str(num_axes),
+            'srsName': grid.srs,
+            'uomLabels': ' '.join(axis.uom for axis in grid.axes)
+        }
     )
+
+    if rectified:
+        elem.append(
+            GML('origin',
+                ' '.join(str(axis.lower_bound) for axis in grid.axes)
+            )
+        )
+        elem.extend([
+            GML('offsetVector',
+                ' '.join(
+                    str(v)
+                    for v in (
+                        [0.0] * i + [axis.resolution] + [0.0] * (num_axes - i - 1)
+                    )
+                )
+            ) for i, axis in enumerate(grid.axes)
+        ])
+
+    return elem
+
+
+def encode_domain_set(grid: Grid, identifier: str):
+    return GML('domainSet', encode_grid(grid, identifier))
 
 
 def encode_range_type(range_type: List[Field]):

@@ -25,6 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
+
 class HTTPMethodNotAllowedError(Exception):
     """ This exception is raised in case of a HTTP requires with unsupported
     HTTP method.

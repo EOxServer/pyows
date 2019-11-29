@@ -34,18 +34,20 @@ from urllib.parse import unquote
 from lxml import etree
 
 from ows.common.objects import WGS84BoundingBox, BoundingBox, Metadata
-from ows.gml.v32 import Grid, RectifiedGrid, Point, Field
+from ows.gml.objects import Grid, RegularAxis
+from ows.swe.objects import Field
 from .objects import (
     DescribeCoverageRequest, GetCoverageRequest, Trim, Slice,
     ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation,
 )
 from ..objects import (
-    ServiceCapabilities, CoverageSummary, DatasetSeriesSummary
+    ServiceCapabilities, CoverageSummary, DatasetSeriesSummary,
+    CoverageDescription
 )
 from .encoders import (
     kvp_encode_describe_coverage, xml_encode_describe_coverage,
     kvp_encode_get_coverage, xml_encode_get_coverage,
-    xml_encode_capabilities
+    xml_encode_capabilities, xml_encode_coverage_descriptions
 )
 
 
@@ -372,14 +374,21 @@ def test_encode_coverage_descriptions():
                     # significant_figures=5,
                 )
             ],
-            grid=RectifiedGrid(
-                identifier='a__grid', limits=([0, 0], [200, 200]),
-                origin=[2.5, 3.7],
-                offsets=[[1.0, 0], [0.0, 1.0]],
-                axis_names=['lat', 'lon'],
+            grid=Grid(
+                axes=[
+                    RegularAxis('lon', 'i', 2.5, 3.5, 0.1, 'deg', 10),
+                    RegularAxis('lat', 'j', 3.7, 4.7, 0.1, 'deg', 10),
+                ],
                 srs='http://www.opengis.net/def/crs/EPSG/0/4326',
-                uom_labels=['deg', 'deg'],
             ),
+            # grid=RectifiedGrid(
+            #     identifier='a__grid', limits=([0, 0], [200, 200]),
+            #     origin=[2.5, 3.7],
+            #     offsets=[[1.0, 0], [0.0, 1.0]],
+            #     axis_names=['lat', 'lon'],
+            #     srs='http://www.opengis.net/def/crs/EPSG/0/4326',
+            #     uom_labels=['deg', 'deg'],
+            # ),
             native_format='image/tiff',
             coverage_subtype='RectifiedDataset'
         )

@@ -26,11 +26,12 @@
 # ------------------------------------------------------------------------------
 
 from datetime import datetime
-from typing import List, Dict, Tuple, Union
+from typing import List, Tuple
 from dataclasses import dataclass, field
 
 from ows.common import objects as common
-from ows.gml.v32 import Grid, RectifiedGrid, Field
+from ows.gml.objects import Grid
+from ows.swe.objects import Field
 
 
 @dataclass
@@ -115,19 +116,30 @@ class ServiceCapabilities(common.ServiceCapabilities):
                 'DescribeEOCoverageSet', 'GetCoverage'
             ]
 
-        if 'operations' not in kwargs:
-            kwargs['operations'] = [
-                common.Operation(operation_name, [
+        def get_operation_methods(service_url, allow_get, allow_post):
+            operation_methods = []
+            if allow_get:
+                operation_methods.append(
                     common.OperationMethod(
                         common.HttpMethod.Get, service_url=service_url
-                    ) if allow_get else None,
+                    )
+                )
+            if allow_post:
+                operation_methods.append(
                     common.OperationMethod(
                         common.HttpMethod.Post, service_url=service_url,
                         constraints=[
                             common.Constraint('PostEncoding', ['XML'])
                         ]
-                    ) if allow_post else None,
-                ])
+                    )
+                )
+            return operation_methods
+
+        if 'operations' not in kwargs:
+            kwargs['operations'] = [
+                common.Operation(operation_name, get_operation_methods(
+                    service_url, allow_get, allow_post
+                ))
                 for operation_name in allowed_operations
             ]
 
@@ -138,7 +150,7 @@ class ServiceCapabilities(common.ServiceCapabilities):
 class CoverageDescription:
     identifier: str
     range_type: List[Field]
-    grid: Union[Grid, RectifiedGrid]
+    grid: Grid
     native_format: str
     coverage_subtype: str
     coverage_subtype_parent: str = None

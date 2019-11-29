@@ -30,7 +30,7 @@
 
 from urllib.parse import parse_qs
 
-from .base import BaseParameter, BaseDecoder, NO_DEFAULT
+from .decoder import BaseParameter, BaseDecoder, NO_DEFAULT
 
 
 class Parameter(BaseParameter):

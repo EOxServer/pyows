@@ -28,17 +28,24 @@
 """ This module contains facilities to help decoding XML structures.
 """
 
+from typing import List, Dict, Optional
+
 from lxml import etree
 from lxml.builder import ElementMaker as _ElementMaker
 
-from .base import BaseParameter, BaseDecoder, NO_DEFAULT
+from .decoder import BaseParameter, BaseDecoder, NO_DEFAULT
+
+
+# type alias
+Element = etree._Element
 
 
 class ElementMaker(_ElementMaker):
-    """ Subclass of the original ElementMaker that automatically filters out
+    ''' Subclass of the original ElementMaker that automatically filters out
         None values in sub-elements and attributes.
-    """
-    def __call__(self, tag, *args, **kwargs):
+    '''
+    def __call__(self, tag: str, *args: List[Optional[Element]],
+                 **kwargs: Dict[str, Optional[str]]) -> Element:
         return super().__call__(tag, *[
             arg
             for arg in args
@@ -51,15 +58,15 @@ class ElementMaker(_ElementMaker):
 
 
 class NameSpace(object):
-    """ Helper object to ease the dealing with namespaces in both encoding and
+    ''' Helper object to ease the dealing with namespaces in both encoding and
         decoding.
 
         :param uri: the namespace URI
         :param prefix: the namespace prefix
         :param schema_location: the schema location of this namespace
-    """
+    '''
 
-    def __init__(self, uri, prefix=None, schema_location=None):
+    def __init__(self, uri: str, prefix=None, schema_location=None):
         self._uri = uri
         self._lxml_uri = "{%s}" % uri
         self._prefix = prefix
