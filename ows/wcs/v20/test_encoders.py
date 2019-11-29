@@ -33,14 +33,14 @@ from urllib.parse import unquote
 
 from lxml import etree
 
-from ows.common.objects import WGS84BoundingBox, BoundingBox, Metadata
-from ows.gml.objects import Grid, RegularAxis
-from ows.swe.objects import Field
-from .objects import (
+from ows.common.types import WGS84BoundingBox, BoundingBox, Metadata
+from ows.gml.types import Grid, RegularAxis
+from ows.swe.types import Field
+from .types import (
     DescribeCoverageRequest, GetCoverageRequest, Trim, Slice,
     ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation,
 )
-from ..objects import (
+from ..types import (
     ServiceCapabilities, CoverageSummary, DatasetSeriesSummary,
     CoverageDescription
 )

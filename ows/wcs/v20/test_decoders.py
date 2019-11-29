@@ -32,7 +32,7 @@ from urllib.parse import unquote
 
 from lxml import etree
 
-from .objects import DescribeCoverageRequest, GetCoverageRequest
+from .types import DescribeCoverageRequest, GetCoverageRequest
 from .decoders import (
     kvp_decode_describe_coverage, xml_decode_describe_coverage,
     kvp_decode_get_coverage, xml_decode_get_coverage

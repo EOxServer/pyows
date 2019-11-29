@@ -32,7 +32,7 @@ from ows.cis.v11 import (
     encode_envelope, encode_domain_set, encode_range_type
 )
 from .namespaces import WCS, ns_gml
-from ..objects import CoverageDescription
+from ..types import CoverageDescription
 
 
 def xml_encode_coverage_descriptions(coverage_descriptions: List[CoverageDescription], **kwargs):

@@ -30,12 +30,12 @@
 from typing import List
 
 from ows.util import Result
-from .objects import (
+from .types import (
     DescribeCoverageRequest, GetCoverageRequest,
     Trim, Slice, ScaleSize, ScaleAxis, ScaleExtent
 )
 from .namespaces import WCS, SCAL, CRS, INT, EOWCS
-from ..objects import (
+from ..types import (
     ServiceCapabilities, CoverageSummary, DatasetSeriesSummary,
     CoverageDescription
 )

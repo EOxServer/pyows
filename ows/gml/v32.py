@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from ows.xml import ElementMaker, NameSpace, NameSpaceMap
 from ows.util import isoformat
 from ows.swe.v20 import Field, encode_data_record
-from .objects import Grid, RegularAxis, IrregularAxis, IndexAxis
+from .types import Grid, RegularAxis, IrregularAxis, IndexAxis
 
 
 # namespace declarations

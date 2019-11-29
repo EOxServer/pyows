@@ -37,7 +37,7 @@ from .exceptions import (
     InvalidSubsettingException, InvalidScaleFactorException,
     InvalidScaleExtentException,
 )
-from . import objects
+from . import types
 
 
 # ------------------------------------------------------------------------------
@@ -46,12 +46,12 @@ from . import objects
 
 
 class KVPDescribeCoverageDecoder(kvp.Decoder):
-    object_class = objects.DescribeCoverageRequest
+    object_class = types.DescribeCoverageRequest
     coverage_ids = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
 
 
 class XMLDescribeCoverageDecoder(xml.Decoder):
-    object_class = objects.DescribeCoverageRequest
+    object_class = types.DescribeCoverageRequest
     coverage_ids = xml.Parameter("wcs:CoverageId/text()", num="+")
     namespaces = nsmap
 
@@ -71,7 +71,7 @@ def xml_decode_describe_coverage(xml):
 
 
 class GetCoverageBaseDecoder:
-    object_class = objects.GetCoverageRequest
+    object_class = types.GetCoverageRequest
 
     def create_object(self, params):
         params['scales'] = (
@@ -83,7 +83,7 @@ class GetCoverageBaseDecoder:
         params['output_crs'] = params.pop('outputcrs')
         params['range_subset'] = params.pop('rangesubset')
 
-        return objects.GetCoverageRequest(**params)
+        return types.GetCoverageRequest(**params)
 
 
 # ------------------------------------------------------------------------------
@@ -107,11 +107,11 @@ def parse_subset_kvp(string):
     axis = match.group(1)
     try:
         if match.group(4) is not None:
-            return objects.Trim(
+            return types.Trim(
                 axis, float(match.group(2)), float(match.group(4))
             )
         else:
-            return objects.Slice(axis, float(match.group(2)))
+            return types.Slice(axis, float(match.group(2)))
     except ValueError:
         raise InvalidSubsettingException(
             "Could not parse input subset string."
@@ -123,7 +123,7 @@ def parse_range_subset_kvp(string):
     for item in string.split(","):
         if ":" in item:
             start, end = item.split(":")
-            rangesubset.append(objects.RangeInterval(start, end))
+            rangesubset.append(types.RangeInterval(start, end))
         else:
             rangesubset.append(item)
 
@@ -141,7 +141,7 @@ def parse_scaleaxis_kvp(string):
     except ValueError:
         raise InvalidScaleFactorException(match.group(2))
 
-    return objects.ScaleAxis(axis, value)
+    return types.ScaleAxis(axis, value)
 
 
 def parse_scalesize_kvp(string):
@@ -155,7 +155,7 @@ def parse_scalesize_kvp(string):
     except ValueError:
         raise InvalidScaleFactorException(match.group(2))
 
-    return objects.ScaleSize(axis, value)
+    return types.ScaleSize(axis, value)
 
 
 def parse_scaleextent_kvp(string):
@@ -173,7 +173,7 @@ def parse_scaleextent_kvp(string):
     if low >= high:
         raise InvalidScaleExtentException(low, high)
 
-    return objects.ScaleExtent(axis, low, high)
+    return types.ScaleExtent(axis, low, high)
 
 
 class KVPGetCoverageDecoder(GetCoverageBaseDecoder, kvp.Decoder):
@@ -203,13 +203,13 @@ def parse_subset_xml(elem):
     try:
         dimension = elem.findtext(ns_wcs("Dimension"))
         if elem.tag == ns_wcs("DimensionTrim"):
-            return objects.Trim(
+            return types.Trim(
                 dimension,
                 float(elem.findtext(ns_wcs("TrimLow"))),
                 float(elem.findtext(ns_wcs("TrimHigh")))
             )
         elif elem.tag == ns_wcs("DimensionSlice"):
-            return objects.Slice(
+            return types.Slice(
                 dimension,
                 float(elem.findtext(ns_wcs("SlicePoint")))
             )
@@ -224,7 +224,7 @@ def parse_range_subset_xml(elem):
         if item.tag == ns_rsub("RangeComponent"):
             rangesubset.append(item.text)
         elif item.tag == ns_rsub("RangeInterval"):
-            rangesubset.append(objects.RangeInterval(
+            rangesubset.append(types.RangeInterval(
                 item.findtext(ns_rsub("startComponent")),
                 item.findtext(ns_rsub("endComponent"))
             ))
@@ -243,7 +243,7 @@ def parse_scaleaxis_xml(elem):
     except ValueError:
         InvalidScaleFactorException(raw)
 
-    return ScaleAxis(axis, value)
+    return types.ScaleAxis(axis, value)
 
 
 def parse_scalesize_xml(elem):
@@ -254,7 +254,7 @@ def parse_scalesize_xml(elem):
     except ValueError:
         InvalidScaleFactorException(raw)
 
-    return objects.ScaleSize(axis, value)
+    return types.ScaleSize(axis, value)
 
 
 def parse_scaleextent_xml(elem):
@@ -270,7 +270,7 @@ def parse_scaleextent_xml(elem):
     if low >= high:
         raise InvalidScaleExtentException(low, high)
 
-    return objects.ScaleExtent(axis, low, high)
+    return types.ScaleExtent(axis, low, high)
 
 
 class XMLGetCoverageDecoder(GetCoverageBaseDecoder, xml.Decoder):

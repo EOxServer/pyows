@@ -30,7 +30,7 @@ from ows.decoder import typelist, lower
 
 from .namespaces import nsmap
 
-from .. import objects
+from ..types import GetCapabilitiesRequest
 
 
 # ------------------------------------------------------------------------------
@@ -38,7 +38,8 @@ from .. import objects
 # ------------------------------------------------------------------------------
 
 class KVPGetCapabilitiesDecoder(kvp.Decoder):
-    object_class = objects.GetCapabilitiesRequest
+    object_class = GetCapabilitiesRequest
+
     service = kvp.Parameter('service')
     update_sequence = kvp.Parameter('updatesequence', num="?")
     sections = kvp.Parameter(type=typelist(lower, ","), num="?", default_factory=list)
@@ -48,7 +49,8 @@ class KVPGetCapabilitiesDecoder(kvp.Decoder):
 
 
 class XMLGetCapabilitiesDecoder(xml.Decoder):
-    object_class = objects.GetCapabilitiesRequest
+    object_class = GetCapabilitiesRequest
+
     service = xml.Parameter("@service")
     sections = xml.Parameter("ows:Sections/ows:Section/text()", num="*", default_factory=list)
     update_sequence = xml.Parameter("@updateSequence", num="?")

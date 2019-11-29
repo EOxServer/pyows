@@ -29,7 +29,7 @@ from datetime import datetime
 
 from .encoders import xml_encode_coverage_descriptions
 from ows.cis.v11 import Grid, Field, RegularAxis, IrregularAxis
-from ..objects import CoverageDescription
+from ..types import CoverageDescription
 
 
 print(xml_encode_coverage_descriptions([

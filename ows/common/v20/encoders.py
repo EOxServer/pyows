@@ -30,7 +30,7 @@
 from typing import List
 
 from .namespaces import OWS, ns_xlink
-from ..objects import (
+from ..types import (
     ServiceCapabilities, Operation, Constraint,
     WGS84BoundingBox, BoundingBox, Metadata
 )

@@ -29,9 +29,9 @@ from datetime import datetime
 from typing import List, Tuple
 from dataclasses import dataclass, field
 
-from ows.common import objects as common
-from ows.gml.objects import Grid
-from ows.swe.objects import Field
+from ows.common import types as common
+from ows.gml.types import Grid
+from ows.swe.types import Field
 
 
 @dataclass

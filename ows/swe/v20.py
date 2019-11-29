@@ -26,7 +26,7 @@
 # -------------------------------------------------------------------------------
 
 from ows.xml import ElementMaker, NameSpace, NameSpaceMap, Element
-from .objects import Field, DataRecord
+from .types import Field, DataRecord
 
 ns_swe = NameSpace("http://www.opengis.net/swe/2.0", "swe")
 
