@@ -92,6 +92,17 @@ class RangeInterval:
 
 
 @dataclass
+class GeoTIFFEncodingParameters:
+    compression: str = None
+    jpeg_quality: int = None
+    predictor: str = None
+    interleave: str = None
+    tiling: bool = None
+    tile_width: int = None
+    tile_height: int = None
+
+
+@dataclass
 class GetCoverageRequest:
     version: Version
     coverage_id: str
@@ -105,3 +116,4 @@ class GetCoverageRequest:
     interpolation: str = None
     axis_interpolations: List[AxisInterpolation] = field(default_factory=list)
     range_subset: List[Union[str, RangeInterval]] = None
+    geotiff_encoding_parameters: GeoTIFFEncodingParameters = None

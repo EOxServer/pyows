@@ -25,12 +25,12 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
-# flake8: noqa
+# flake8: noq
 
 import re
 
 from ows import kvp, xml
-from ows.decoder import typelist
+from ows.decoder import typelist, enum, boolean
 from ows.util import Version
 
 from .namespaces import ns_wcs, ns_rsub, ns_scal, nsmap
@@ -86,6 +86,16 @@ class GetCoverageBaseDecoder:
         params['output_crs'] = params.pop('outputcrs')
         params['range_subset'] = params.pop('rangesubset')
 
+        params['geotiff_encoding_parameters'] = types.GeoTIFFEncodingParameters(
+            compression=params.pop('geotiff_compression', None),
+            jpeg_quality=params.pop('geotiff_jpeg_quality', None),
+            predictor=params.pop('geotiff_predictor', None),
+            interleave=params.pop('geotiff_interleave', None),
+            tiling=params.pop('geotiff_tiling', None),
+            tile_height=params.pop('geotiff_tileheight', None),
+            tile_width=params.pop('geotiff_tilewidth', None),
+        )
+
         return types.GetCoverageRequest(**params)
 
 
@@ -94,14 +104,24 @@ class GetCoverageBaseDecoder:
 # ------------------------------------------------------------------------------
 
 
-SUBSET_RE = re.compile(r'(\w+)\(([^,]*)(,([^)]*))?\)')
-SCALEAXIS_RE = re.compile(r'(\w+)\(([^)]*)\)')
+SUBSET_RE = re.compile(r'([a-zA-Z0-9_]+)\(([^,]*)(,([^)]*))?\)')
+SCALEAXIS_RE = re.compile(r'([a-zA-Z0-9_]+)\(([^)]*)\)')
 SCALESIZE_RE = SCALEAXIS_RE
-SCALEEXTENT_RE = re.compile(r'(\w+)\(([^:]*):([^)]*)\)')
+SCALEEXTENT_RE = re.compile(r'([a-zA-Z0-9_]+)\(([^:]*):([^)]*)\)')
+
+
+def parse_subset_value(string):
+    if string == '*':
+        return None
+    elif string.startswith('"') and string.endswith('"'):
+        return string[1:-1]
+    else:
+        return float(string)
 
 
 def parse_subset_kvp(string):
     match = SUBSET_RE.match(string)
+
     if not match:
         raise InvalidSubsettingException(
             "Could not parse input subset string."
@@ -111,14 +131,16 @@ def parse_subset_kvp(string):
     try:
         if match.group(4) is not None:
             return types.Trim(
-                axis, float(match.group(2)), float(match.group(4))
+                axis,
+                parse_subset_value(match.group(2)),
+                parse_subset_value(match.group(4))
             )
         else:
-            return types.Slice(axis, float(match.group(2)))
-    except ValueError:
+            return types.Slice(axis, parse_subset_value(match.group(2)))
+    except ValueError as exc:
         raise InvalidSubsettingException(
             "Could not parse input subset string."
-        )
+        ) from exc
 
 
 def parse_range_subset_kvp(string):
@@ -179,6 +201,21 @@ def parse_scaleextent_kvp(string):
     return types.ScaleExtent(axis, low, high)
 
 
+compression_enum = enum(
+    ("None", "PackBits", "Huffman", "LZW", "JPEG", "Deflate"), True
+)
+predictor_enum = enum(("None", "Horizontal", "FloatingPoint"), True)
+interleave_enum = enum(("Pixel", "Band"), True)
+
+def parse_multiple_16(raw):
+    value = int(raw)
+    if value < 0:
+        raise ValueError("Value must be a positive integer.")
+    elif (value % 16) != 0:
+        raise ValueError("Value must be a multiple of 16.")
+    return value
+
+
 class KVPGetCoverageDecoder(GetCoverageBaseDecoder, kvp.Decoder):
     version = kvp.Parameter(type=Version.from_str, num=1)
     coverage_id = kvp.Parameter("coverageid", num=1)
@@ -193,6 +230,14 @@ class KVPGetCoverageDecoder(GetCoverageBaseDecoder, kvp.Decoder):
     outputcrs = kvp.Parameter("outputcrs", num="?")
     mediatype = kvp.Parameter("mediatype", num="?")
     interpolation = kvp.Parameter("interpolation", num="?")
+
+    geotiff_compression = kvp.Parameter("geotiff:compression", num="?", type=compression_enum)
+    geotiff_jpeg_quality = kvp.Parameter("geotiff:jpeg_quality", num="?", type=int)
+    geotiff_predictor = kvp.Parameter("geotiff:predictor", num="?", type=predictor_enum)
+    geotiff_interleave = kvp.Parameter("geotiff:interleave", num="?", type=interleave_enum)
+    geotiff_tiling = kvp.Parameter("geotiff:tiling", num="?", type=boolean)
+    geotiff_tileheight = kvp.Parameter("geotiff:tileheight", num="?", type=parse_multiple_16)
+    geotiff_tilewidth = kvp.Parameter("geotiff:tilewidth", num="?", type=parse_multiple_16)
 
 
 # ------------------------------------------------------------------------------
@@ -209,13 +254,13 @@ def parse_subset_xml(elem):
         if elem.tag == ns_wcs("DimensionTrim"):
             return types.Trim(
                 dimension,
-                float(elem.findtext(ns_wcs("TrimLow"))),
-                float(elem.findtext(ns_wcs("TrimHigh")))
+                parse_subset_value(elem.findtext(ns_wcs("TrimLow"))),
+                parse_subset_value(elem.findtext(ns_wcs("TrimHigh")))
             )
         elif elem.tag == ns_wcs("DimensionSlice"):
             return types.Slice(
                 dimension,
-                float(elem.findtext(ns_wcs("SlicePoint")))
+                parse_subset_value(elem.findtext(ns_wcs("SlicePoint")))
             )
     except Exception as e:
         raise InvalidSubsettingException(str(e))
