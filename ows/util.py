@@ -27,10 +27,50 @@
 
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Sequence
 from urllib.parse import urlencode
+import functools
 
 from lxml import etree
+
+
+@dataclass
+@functools.total_ordering
+class Version:
+    major: int
+    minor: int
+    patch: int = None
+
+    def __post_init__(self):
+        assert isinstance(self.major, int) and self.major >= 0
+        assert isinstance(self.minor, int) and self.minor >= 0
+        assert self.patch is None or (
+            isinstance(self.patch, int) and self.patch >= 0
+        )
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            other = self.from_str(other)
+        elif isinstance(other, Sequence):
+            other = type(self)(*other)
+
+        if self.major == other.major and self.minor == other.minor:
+            if self.patch is not None and other.patch is not None:
+                return self.patch == other.patch
+            return True
+        return False
+
+    def __lt__(self, other):
+        return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
+
+    def __str__(self):
+        if self.patch:
+            return f'{self.major}.{self.minor}.{self.patch}'
+        return f'{self.major}.{self.minor}'
+
+    @classmethod
+    def from_str(cls, value: str):
+        return cls(*[int(part) for part in value.split('.')])
 
 
 @dataclass

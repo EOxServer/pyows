@@ -381,14 +381,6 @@ def test_encode_coverage_descriptions():
                 ],
                 srs='http://www.opengis.net/def/crs/EPSG/0/4326',
             ),
-            # grid=RectifiedGrid(
-            #     identifier='a__grid', limits=([0, 0], [200, 200]),
-            #     origin=[2.5, 3.7],
-            #     offsets=[[1.0, 0], [0.0, 1.0]],
-            #     axis_names=['lat', 'lon'],
-            #     srs='http://www.opengis.net/def/crs/EPSG/0/4326',
-            #     uom_labels=['deg', 'deg'],
-            # ),
             native_format='image/tiff',
             coverage_subtype='RectifiedDataset'
         )

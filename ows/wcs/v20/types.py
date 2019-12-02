@@ -28,6 +28,8 @@
 from dataclasses import dataclass, field
 from typing import List, Union
 
+from ows.util import Version
+
 
 class GetCapabilitiesRequest:
     pass
@@ -35,6 +37,7 @@ class GetCapabilitiesRequest:
 
 @dataclass
 class DescribeCoverageRequest:
+    version: Version
     coverage_ids: List[str]
 
 
@@ -49,6 +52,9 @@ class Trim:
     dimension: str
     low: float = None
     high: float = None
+
+
+SubsetTypes = Union[Slice, Trim]
 
 
 @dataclass
@@ -70,6 +76,9 @@ class ScaleExtent:
     high: float
 
 
+ScaleTypes = Union[ScaleAxis, ScaleSize, ScaleExtent]
+
+
 @dataclass
 class AxisInterpolation:
     axis: str
@@ -84,14 +93,15 @@ class RangeInterval:
 
 @dataclass
 class GetCoverageRequest:
+    version: Version
     coverage_id: str
     format: str = None
     mediatype: str = None
     subsetting_crs: str = None
     output_crs: str = None
-    subsets: List[Union[Slice, Trim]] = field(default_factory=list)
+    subsets: List[SubsetTypes] = field(default_factory=list)
     scalefactor: float = None
-    scales: List[Union[ScaleAxis, ScaleSize, ScaleExtent]] = field(default_factory=list)
+    scales: List[ScaleTypes] = field(default_factory=list)
     interpolation: str = None
     axis_interpolations: List[AxisInterpolation] = field(default_factory=list)
     range_subset: List[Union[str, RangeInterval]] = None

@@ -31,6 +31,7 @@ import re
 
 from ows import kvp, xml
 from ows.decoder import typelist
+from ows.util import Version
 
 from .namespaces import ns_wcs, ns_rsub, ns_scal, nsmap
 from .exceptions import (
@@ -47,11 +48,13 @@ from . import types
 
 class KVPDescribeCoverageDecoder(kvp.Decoder):
     object_class = types.DescribeCoverageRequest
+    version = kvp.Parameter(type=Version.from_str, num=1)
     coverage_ids = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
 
 
 class XMLDescribeCoverageDecoder(xml.Decoder):
     object_class = types.DescribeCoverageRequest
+    version = xml.Parameter("@version", type=Version.from_str, num=1)
     coverage_ids = xml.Parameter("wcs:CoverageId/text()", num="+")
     namespaces = nsmap
 
@@ -177,6 +180,7 @@ def parse_scaleextent_kvp(string):
 
 
 class KVPGetCoverageDecoder(GetCoverageBaseDecoder, kvp.Decoder):
+    version = kvp.Parameter(type=Version.from_str, num=1)
     coverage_id = kvp.Parameter("coverageid", num=1)
     subsets = kvp.Parameter("subset", type=parse_subset_kvp, num="*")
     scalefactor = kvp.Parameter("scalefactor", type=float, num="?")
@@ -274,6 +278,7 @@ def parse_scaleextent_xml(elem):
 
 
 class XMLGetCoverageDecoder(GetCoverageBaseDecoder, xml.Decoder):
+    version = xml.Parameter("@version", type=Version.from_str, num=1)
     coverage_id = xml.Parameter("wcs:CoverageId/text()", num=1, locator="coverageid")
     subsets = xml.Parameter("wcs:DimensionTrim", type=parse_subset_xml, num="*", default_factory=list, locator="subset")
     scalefactor = xml.Parameter("wcs:Extension/scal:ScaleByFactor/scal:scaleFactor/text()", type=float, num="?", locator="scalefactor")
