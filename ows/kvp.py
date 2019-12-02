@@ -29,6 +29,7 @@
 """
 
 from urllib.parse import parse_qs
+from typing import Iterable, Sequence
 
 from .decoder import BaseParameter, BaseDecoder, NO_DEFAULT
 
@@ -150,6 +151,11 @@ class Decoder(BaseDecoder, metaclass=DecoderMetaclass):
         elif isinstance(params, dict):
             for key, value in params.items():
                 query_dict[key.lower()] = [value]
+
+        elif isinstance(params, Iterable):
+            for key, value in params:
+                value = value if isinstance(value, (tuple, list)) else [value]
+                query_dict[key.lower()] = value
 
         else:
             raise ValueError(
