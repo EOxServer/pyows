@@ -38,7 +38,7 @@ GetCoverageRequest(coverage_id='a', format=None, mediatype=None, subsetting_crs=
 The other way around:
 
 ```python
->>> from ows.wcs.v20.objects import GetCoverageRequest, Trim, Slice
+>>> from ows.wcs.v20 import GetCoverageRequest, Trim, Slice
 >>> request = GetCoverageRequest(
 ...     coverage_id='a',
 ...     subsets=[
