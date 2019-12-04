@@ -49,7 +49,8 @@ def assert_elements_equal(elem_a, elem_b, path=''):
         f'Tag name differs at {path}: {q_a.localname} != {q_b.localname}'
     assert q_a.namespace == q_b.namespace, \
         f'Namespace differs at {path}: {q_a.namespace} != {q_b.namespace}'
-    assert elem_a.text == elem_b.text, f'Text differs at {path}'
+    assert elem_a.text == elem_b.text, \
+        f'Text differs at {path}: {elem_a.text!r} != {elem_b.text!r}'
 
     assert elem_a.attrib == elem_b.attrib, f'Attributes mismatch at {path}'
 

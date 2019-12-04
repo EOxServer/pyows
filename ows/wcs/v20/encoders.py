@@ -34,7 +34,7 @@ from .types import (
     DescribeCoverageRequest, GetCoverageRequest,
     Trim, Slice, ScaleSize, ScaleAxis, ScaleExtent
 )
-from .namespaces import WCS, SCAL, CRS, INT, EOWCS
+from .namespaces import WCS, SCAL, CRS, INT, EOWCS, GEOTIFF
 from ..types import (
     ServiceCapabilities, CoverageSummary, DatasetSeriesSummary,
     CoverageDescription
@@ -54,7 +54,7 @@ def kvp_encode_describe_coverage(request: DescribeCoverageRequest, **kwargs):
     return Result.from_kvp(
         dict(
             service='WCS',
-            version="2.0.1",
+            version=str(request.version),
             request='DescribeCoverage',
             coverageid=','.join(request.coverage_ids),
         ), **kwargs
@@ -68,7 +68,7 @@ def xml_encode_describe_coverage(request: DescribeCoverageRequest, **kwargs):
                 for identifier in request.coverage_ids
             ],
             service='WCS',
-            version="2.0.1",
+            version=str(request.version),
         )
     return Result.from_etree(root, **kwargs)
 
@@ -83,7 +83,7 @@ def maybe_quote(value):
 def kvp_encode_get_coverage(request: GetCoverageRequest):
     params = [
         ('service', 'WCS'),
-        ('version', '2.0.1'),
+        ('version', str(request.version)),
         ('request', 'GetCoverage'),
         ('coverageid', request.coverage_id),
     ]
@@ -153,6 +153,42 @@ def kvp_encode_get_coverage(request: GetCoverageRequest):
                 ('interpolationPerAxis', f'{axis},{method}')
             )
 
+    geotiff = request.geotiff_encoding_parameters
+    if geotiff:
+        if geotiff.compression is not None:
+            params.append(
+                ('geotiff:compression', geotiff.compression)
+            )
+        if geotiff.jpeg_quality:
+            params.append(
+                ('geotiff:jpeg_quality', geotiff.jpeg_quality)
+            )
+
+        if geotiff.predictor is not None:
+            params.append(
+                ('geotiff:predictor', geotiff.predictor)
+            )
+
+        if geotiff.interleave is not None:
+            params.append(
+                ('geotiff:interleave', geotiff.interleave)
+            )
+
+        if geotiff.tiling is not None:
+            params.append(
+                ('geotiff:tiling', str(geotiff.tiling).lower())
+            )
+
+        if geotiff.tile_width is not None:
+            params.append(
+                ('geotiff:tilewidth', str(geotiff.tile_width))
+            )
+
+        if geotiff.tile_height is not None:
+            params.append(
+                ('geotiff:tileheight', str(geotiff.tile_height))
+            )
+
     return Result.from_kvp(params)
 
 
@@ -160,7 +196,7 @@ def xml_encode_get_coverage(request: GetCoverageRequest, **kwargs):
     root = WCS('GetCoverage',
         WCS('CoverageId', request.coverage_id),
         service='WCS',
-        version='2.0.1',
+        version=str(request.version),
     )
 
     for subset in request.subsets:
@@ -261,7 +297,47 @@ def xml_encode_get_coverage(request: GetCoverageRequest, **kwargs):
                     INT('interpolationMethod', axis_interpolation.method),
                 )
             )
-        root.append(node)
+        extension_node.append(node)
+
+    geotiff = request.geotiff_encoding_parameters
+    if geotiff:
+        geotiff_node = GEOTIFF('parameters')
+        if geotiff.compression is not None:
+            geotiff_node.append(
+                GEOTIFF('compression', geotiff.compression)
+            )
+        if geotiff.jpeg_quality:
+            geotiff_node.append(
+                GEOTIFF('jpeg_quality', geotiff.jpeg_quality)
+            )
+
+        if geotiff.predictor is not None:
+            geotiff_node.append(
+                GEOTIFF('predictor', geotiff.predictor)
+            )
+
+        if geotiff.interleave is not None:
+            geotiff_node.append(
+                GEOTIFF('interleave', geotiff.interleave)
+            )
+
+        if geotiff.tiling is not None:
+            geotiff_node.append(
+                GEOTIFF('tiling', str(geotiff.tiling).lower())
+            )
+
+        if geotiff.tile_width is not None:
+            geotiff_node.append(
+                GEOTIFF('tilewidth', str(geotiff.tile_width))
+            )
+
+        if geotiff.tile_height is not None:
+            geotiff_node.append(
+                GEOTIFF('tileheight', str(geotiff.tile_height))
+            )
+
+        if len(geotiff_node):
+            extension_node.append(geotiff_node)
 
     if len(extension_node):
         root.append(extension_node)

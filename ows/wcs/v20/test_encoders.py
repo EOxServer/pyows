@@ -39,6 +39,7 @@ from ows.swe.types import Field
 from .types import (
     DescribeCoverageRequest, GetCoverageRequest, Trim, Slice,
     ScaleAxis, ScaleExtent, ScaleSize, AxisInterpolation,
+    GeoTIFFEncodingParameters,
 )
 from ..types import (
     ServiceCapabilities, CoverageSummary, DatasetSeriesSummary,
@@ -149,6 +150,24 @@ def test_encode_get_coverage_kvp():
         "&interpolationPerAxis=x,LINEAR&interpolationPerAxis=y,CUBIC"
     )
 
+    # geotiff
+    request = GetCoverageRequest(
+        coverage_id='a',
+        geotiff_encoding_parameters=GeoTIFFEncodingParameters(
+            compression='LZW',
+            predictor='Horizontal',
+            interleave='Band',
+            tiling=True,
+            tile_width=256,
+            tile_height=256,
+        )
+    )
+    assert unquote(kvp_encode_get_coverage(request).value) == (
+        "service=WCS&version=2.0.1&request=GetCoverage&coverageid=a"
+        "&geotiff:compression=LZW&geotiff:predictor=Horizontal&geotiff:interleave=Band"
+        "&geotiff:tiling=true&geotiff:tilewidth=256&geotiff:tileheight=256"
+    )
+
 
 def test_encode_get_coverage_xml():
     # simplest request
@@ -250,17 +269,48 @@ def test_encode_get_coverage_xml():
     assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
     <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" service="WCS" version="2.0.1">
       <wcs:CoverageId>a</wcs:CoverageId>
-      <int:Interpolation>
-        <int:globalInterpolation>NEAREST</int:globalInterpolation>
-        <int:InterpolationPerAxis>
-          <int:axis>x</int:axis>
+      <wcs:Extension>
+        <int:Interpolation>
+          <int:globalInterpolation>NEAREST</int:globalInterpolation>
+            <int:InterpolationPerAxis>
+            <int:axis>x</int:axis>
           <int:interpolationMethod>LINEAR</int:interpolationMethod>
-        </int:InterpolationPerAxis>
-        <int:InterpolationPerAxis>
-          <int:axis>y</int:axis>
-          <int:interpolationMethod>CUBIC</int:interpolationMethod>
-        </int:InterpolationPerAxis>
-      </int:Interpolation>
+          </int:InterpolationPerAxis>
+          <int:InterpolationPerAxis>
+            <int:axis>y</int:axis>
+            <int:interpolationMethod>CUBIC</int:interpolationMethod>
+          </int:InterpolationPerAxis>
+        </int:Interpolation>
+      </wcs:Extension>
+    </wcs:GetCoverage>
+    """))
+
+
+    # geotiff
+    request = GetCoverageRequest(
+        coverage_id='a',
+        geotiff_encoding_parameters=GeoTIFFEncodingParameters(
+            compression='LZW',
+            predictor='Horizontal',
+            interleave='Band',
+            tiling=True,
+            tile_width=256,
+            tile_height=256,
+        )
+    )
+    assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
+    <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:geotiff="http://www.opengis.net/gmlcov/geotiff/1.0" service="WCS" version="2.0.1">
+      <wcs:CoverageId>a</wcs:CoverageId>
+      <wcs:Extension>
+        <geotiff:parameters>
+          <geotiff:compression>LZW</geotiff:compression>
+          <geotiff:predictor>Horizontal</geotiff:predictor>
+          <geotiff:interleave>Band</geotiff:interleave>
+          <geotiff:tiling>true</geotiff:tiling>
+          <geotiff:tilewidth>256</geotiff:tilewidth>
+          <geotiff:tileheight>256</geotiff:tileheight>
+        </geotiff:parameters>
+      </wcs:Extension>
     </wcs:GetCoverage>
     """))
 
