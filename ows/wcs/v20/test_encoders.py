@@ -49,6 +49,7 @@ from .encoders import (
     kvp_encode_get_coverage, xml_encode_get_coverage,
     xml_encode_capabilities, xml_encode_coverage_descriptions
 )
+from ows.test import assert_xml_equal
 
 
 # ------------------------------------------------------------------------------
@@ -162,7 +163,7 @@ def test_encode_get_coverage_xml():
             Slice(dimension='time', point='2018-05-07')
         ]
     )
-    assert(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8') == dedent("""\
+    assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
     <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" service="WCS" version="2.0.1">
       <wcs:CoverageId>a</wcs:CoverageId>
       <wcs:DimensionTrim>
@@ -187,7 +188,7 @@ def test_encode_get_coverage_xml():
         subsetting_crs='EPSG:4326',
         output_crs='EPSG:3875',
     )
-    assert(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8') == dedent("""\
+    assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
     <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" service="WCS" version="2.0.1">
       <wcs:CoverageId>a</wcs:CoverageId>
       <wcs:Extension>
@@ -207,7 +208,7 @@ def test_encode_get_coverage_xml():
             ScaleExtent(axis='z', low=200, high=600),
         ]
     )
-    assert(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8') == dedent("""\
+    assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
     <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" service="WCS" version="2.0.1">
       <wcs:CoverageId>a</wcs:CoverageId>
       <wcs:Extension>
@@ -246,7 +247,7 @@ def test_encode_get_coverage_xml():
             AxisInterpolation(axis='y', method='CUBIC')
         ]
     )
-    assert(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8') == dedent("""\
+    assert_xml_equal(xml_encode_get_coverage(request, pretty_print=True).value.decode('utf-8'), dedent("""\
     <wcs:GetCoverage xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" service="WCS" version="2.0.1">
       <wcs:CoverageId>a</wcs:CoverageId>
       <int:Interpolation>

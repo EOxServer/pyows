@@ -337,6 +337,14 @@ class XMLGetCoverageDecoder(GetCoverageBaseDecoder, xml.Decoder):
     mediatype = xml.Parameter("wcs:mediaType/text()", num="?", locator="mediatype")
     interpolation = xml.Parameter("wcs:Extension/int:Interpolation/int:globalInterpolation/text()", num="?", locator="interpolation")
 
+    geotiff_compression = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:compression/text()", num="?", type=compression_enum, locator="geotiff:compression")
+    geotiff_jpeg_quality = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:jpeg_quality/text()", num="?", type=int, locator="geotiff:jpeg_quality")
+    geotiff_predictor = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:predictor/text()", num="?", type=predictor_enum, locator="geotiff:predictor")
+    geotiff_interleave = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:interleave/text()", num="?", type=interleave_enum, locator="geotiff:interleave")
+    geotiff_tiling = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:tiling/text()", num="?", type=boolean, locator="geotiff:tiling")
+    geotiff_tileheight = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:tileheight/text()", num="?", type=parse_multiple_16, locator="geotiff:tileheight")
+    geotiff_tilewidth = xml.Parameter("wcs:Extension/geotiff:parameters/geotiff:tilewidth/text()", num="?", type=parse_multiple_16, locator="geotiff:tilewidth")
+
     namespaces = nsmap
 
 

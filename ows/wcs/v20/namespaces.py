@@ -40,11 +40,12 @@ ns_eowcs = NameSpace("http://www.opengis.net/wcs/wcseo/1.0", "wcseo",
 ns_swe = NameSpace("http://www.opengis.net/swe/2.0", "swe")
 ns_int = NameSpace("http://www.opengis.net/wcs/interpolation/1.0", "int")
 ns_scal = NameSpace("http://www.opengis.net/wcs/scaling/1.0", "scal")
+ns_geotiff = NameSpace("http://www.opengis.net/gmlcov/geotiff/1.0", "geotiff")
 
 # namespace map
 nsmap = NameSpaceMap(
     ns_xlink, ns_ogc, ns_ows, ns_gml, ns_gmlcov, ns_wcs, ns_crs, ns_rsub,
-    ns_eowcs, ns_om, ns_eop, ns_swe, ns_int, ns_scal
+    ns_eowcs, ns_om, ns_eop, ns_swe, ns_int, ns_scal, ns_geotiff
 )
 
 # Element factories

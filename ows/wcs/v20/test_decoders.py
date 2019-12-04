@@ -32,7 +32,9 @@ from urllib.parse import unquote
 
 from lxml import etree
 
-from .types import DescribeCoverageRequest, GetCoverageRequest
+from .types import (
+    DescribeCoverageRequest, GetCoverageRequest, GeoTIFFEncodingParameters
+)
 from .decoders import (
     kvp_decode_describe_coverage, xml_decode_describe_coverage,
     kvp_decode_get_coverage, xml_decode_get_coverage
@@ -78,7 +80,7 @@ def test_decode_describe_coverage_xml():
 def test_decode_get_coverage_kvp():
     request = "service=WCS&version=2.0.1&request=GetCoverage&coverageid=a"
     assert kvp_decode_get_coverage(request) == GetCoverageRequest(
-        coverage_id='a'
+        coverage_id='a',
     )
 
 
@@ -100,5 +102,5 @@ def test_decode_get_coverage_xml():
     """
 
     assert xml_decode_get_coverage(request) == GetCoverageRequest(
-        coverage_id='a'
+        coverage_id='a',
     )

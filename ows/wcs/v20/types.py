@@ -37,8 +37,8 @@ class GetCapabilitiesRequest:
 
 @dataclass
 class DescribeCoverageRequest:
-    version: Version
     coverage_ids: List[str]
+    version: Version = Version(2, 0, 1)
 
 
 @dataclass
@@ -104,8 +104,8 @@ class GeoTIFFEncodingParameters:
 
 @dataclass
 class GetCoverageRequest:
-    version: Version
     coverage_id: str
+    version: Version = Version(2, 0, 1)
     format: str = None
     mediatype: str = None
     subsetting_crs: str = None
@@ -116,4 +116,4 @@ class GetCoverageRequest:
     interpolation: str = None
     axis_interpolations: List[AxisInterpolation] = field(default_factory=list)
     range_subset: List[Union[str, RangeInterval]] = None
-    geotiff_encoding_parameters: GeoTIFFEncodingParameters = None
+    geotiff_encoding_parameters: GeoTIFFEncodingParameters = field(default_factory=GeoTIFFEncodingParameters)
