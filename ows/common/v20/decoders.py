@@ -25,13 +25,12 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from ows import kvp, xml
+from ows import kvp, xml, Version
 from ows.decoder import typelist, lower
 
 from .namespaces import nsmap
 
 from ..types import GetCapabilitiesRequest
-
 
 # ------------------------------------------------------------------------------
 # GetCapabilities

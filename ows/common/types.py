@@ -31,6 +31,16 @@ from enum import Enum
 from typing import List, Tuple, Union
 from dataclasses import dataclass, field
 
+from ows import Version
+
+
+@dataclass
+class BaseRequest:
+    service: str
+    request: str
+    version: Version = None
+    accept_versions: List[str] = field(default_factory=list)
+
 
 @dataclass
 class GetCapabilitiesRequest:
@@ -54,11 +64,15 @@ class BoundingBox:
 
 
 @dataclass
-class Metadata:
+class OnlineResource:
     href: str = None
     role: str = None
     arcrole: str = None
     title: str = None
+
+
+@dataclass
+class Metadata(OnlineResource):
     about: str = None
 
 
