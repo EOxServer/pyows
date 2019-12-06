@@ -29,13 +29,11 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 from typing import Any, Sequence
 from urllib.parse import urlencode
-import functools
 
 from lxml import etree
 
 
-@dataclass
-@functools.total_ordering
+@dataclass(eq=True, order=True, frozen=True)
 class Version:
     major: int
     minor: int
@@ -60,8 +58,8 @@ class Version:
             return True
         return False
 
-    def __lt__(self, other):
-        return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
+    # def __lt__(self, other):
+    #     return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
 
     def __str__(self):
         if self.patch:
