@@ -25,8 +25,13 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from ows.common.types import Operation
-from ..types import ServiceCapabilities, Layer
+from datetime import date, datetime, timedelta
+
+from ows.util import Result, isoformat, duration
+from ..types import (
+    ServiceCapabilities, Operation, Layer, Style,
+    Dimension, Range,
+)
 from .namespaces import WMS, ns_xlink
 
 
@@ -48,18 +53,95 @@ def reference_attrs(href=None, type=None, role=None, arcrole=None, title=None,
 
 
 def encode_operation(operation: Operation):
-    return WMS(operation.name,
-        # TODO: formats
-        WMS('DCPType',
-            WMS('HTTP', *[
-                WMS(operation_method.method.value.capitalize(),
-                    WMS('OnlineResource',
-                        **reference_attrs(href=operation_method.service_url)
+    return WMS(operation.name, *[
+            WMS('Format', frmt)
+            for frmt in operation.formats
+        ] + [
+            WMS('DCPType',
+                WMS('HTTP', *[
+                    WMS(operation_method.method.value.capitalize(),
+                        WMS('OnlineResource',
+                            **reference_attrs(
+                                href=operation_method.service_url
+                            )
+                        )
                     )
-                )
-                for operation_method in operation.operation_methods
-            ])
+                    for operation_method in operation.operation_methods
+                ])
+            )
+        ]
+    )
+
+
+def encode_boolean(value):
+    if value is None:
+        return None
+    return 'true' if value else 'false'
+
+
+def encode_dimension_value(value):
+    if isinstance(value, str):
+        return value
+
+    elif isinstance(value, datetime):
+        return isoformat(value)
+
+    return str(value)
+
+
+def encode_dimension(dimension: Dimension):
+    value = None
+    if isinstance(dimension.values, list):
+        value = ','.join(
+            encode_dimension_value(v) for v in dimension.values
         )
+    elif isinstance(dimension.values, Range):
+        value = '/'.join([
+            encode_dimension_value(dimension.values.start),
+            encode_dimension_value(dimension.values.stop),
+            str(dimension.values.resolution),
+        ])
+    return WMS('Dimension',
+        value,
+        name=dimension.name,
+        units=dimension.units,
+        unitSymbol=dimension.unit_symbol,
+        default=dimension.default,
+        multipleValues=encode_boolean(dimension.multiple_values),
+        nearestValue=encode_boolean(dimension.nearest_value),
+        current=encode_boolean(dimension.current),
+    )
+
+
+def encode_style(style: Style):
+    return WMS('Style',
+        WMS('Name', style.name),
+        WMS('Title', style.title),
+        WMS('Abstract', style.abstract) if style.abstract else None,
+        *[
+            WMS('LegendURL',
+                WMS('Format', legend_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=legend_url.href
+                )),
+                width=str(legend_url.width),
+                height=str(legend_url.height),
+            ) for legend_url in style.legend_urls
+        ] + [
+            WMS('StyleSheetURL',
+                WMS('Format', style.style_sheet_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=style.style_sheet_url.href
+                )),
+            ) if style.style_sheet_url else None,
+            WMS('StyleURL',
+                WMS('Format', style.style_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=style.style_url.href
+                )),
+            ) if style.style_url else None,
+        ]
+
     )
 
 
@@ -70,17 +152,31 @@ def encode_layer(layer: Layer):
         WMS('Abstract', layer.abstract) if layer.abstract else None,
         WMS('KeywordList', *[
             WMS('Keyword', keyword)
-            for keyword in capabilities.keywords
+            for keyword in layer.keywords
         ]) if layer.keywords else None, *[
             WMS('CRS', crs)
             for crs in layer.crss
         ] + [
             WMS('EX_GeographicBoundingBox',
-                # TODO
+                WMS('westBoundLongitude',
+                    str(layer.wgs84_bounding_box.bbox[0])
+                ),
+                WMS('eastBoundLongitude',
+                    str(layer.wgs84_bounding_box.bbox[2])
+                ),
+                WMS('southBoundLatitude',
+                    str(layer.wgs84_bounding_box.bbox[1])
+                ),
+                WMS('northBoundLatitude',
+                    str(layer.wgs84_bounding_box.bbox[3])
+                ),
             ) if layer.wgs84_bounding_box else None
         ] + [
             WMS('BoundingBox',
-                # TODO
+                minx=str(bounding_box.bbox[0]),
+                miny=str(bounding_box.bbox[1]),
+                maxx=str(bounding_box.bbox[2]),
+                maxy=str(bounding_box.bbox[3]),
             ) for bounding_box in layer.bounding_boxes
         ] + [
             encode_dimension(dimension)
@@ -101,18 +197,48 @@ def encode_layer(layer: Layer):
             )
             for authority, identifier in layer.identifiers.items()
         ] + [
-            # WMS('DataURL',
-            #     WMS('OnlineResource', **reference_attrs(href=href)),
-            #     authority=identifier,
-            # )
-            # for authority, identifier in layer.identifiers.items()
+            WMS('MetadataURL',
+                WMS('Format', metadata_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=metadata_url.href
+                )),
+                # type=metadata_url.type,
+            )
+            for metadata_url in layer.metadata_urls
+        ] + [
+            WMS('DataURL',
+                WMS('Format', data_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=data_url.href
+                )),
+            )
+            for data_url in layer.data_urls
+        ] + [
+            WMS('FeatureListURL',
+                WMS('Format', feature_list_url.format),
+                WMS('OnlineResource', **reference_attrs(
+                    href=feature_list_url.href
+                )),
+            )
+            for feature_list_url in layer.feature_list_urls
+        ] + [
+            encode_style(style)
+            for style in layer.styles
+        ] + [
+            WMS('MinScaleDenominator',
+                str(layer.min_scale_denominator)
+            ) if layer.min_scale_denominator else None,
+            WMS('MaxScaleDenominator',
+                str(layer.max_scale_denominator)
+            ) if layer.max_scale_denominator else None,
+        ] + [
+            encode_layer(sub_layer)
+            for sub_layer in layer.layers
         ]
-        # TODO
     )
 
 
-def xml_encode_wms_capabilities(capabilities: ServiceCapabilities,
-                                **kwargs):
+def xml_encode_capabilities(capabilities: ServiceCapabilities, **kwargs):
     root = WMS('WMS_Capabilities',
         WMS('Service',
             WMS('Name', 'WMS'),
@@ -154,7 +280,7 @@ def xml_encode_wms_capabilities(capabilities: ServiceCapabilities,
                 WMS('ContactElectronicMailAddress',
                     capabilities.electronic_mail_address
                 ) if capabilities.electronic_mail_address else None,
-            )
+            ),
             WMS('Fees',
                 capabilities.fees
             ) if capabilities.fees else None,
@@ -172,19 +298,21 @@ def xml_encode_wms_capabilities(capabilities: ServiceCapabilities,
             ) if capabilities.max_height is not None else None,
         ),
         WMS('Capability',
-            WMS('Request',
-                *encode_operation(operation)
+            WMS('Request', *[
+                encode_operation(operation)
                 for operation in capabilities.operations
-            ),
+            ]),
             WMS('Exception', *[
                 WMS('Format', exception_format)
                 for exception_format in capabilities.exception_formats
             ]),
-            encode_layer(capabilities.layer),
+            encode_layer(capabilities.layer) if capabilities.layer else None,
         ),
-        version=str(capabilities.service_type_versions[0]),
+        version=(
+            str(capabilities.service_type_versions[0])
+            if capabilities.service_type_versions else '1.3.0'
+        ),
         updateSequence=capabilities.update_sequence
     )
 
-    pass
-
+    return Result.from_etree(root, **kwargs)

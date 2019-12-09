@@ -25,19 +25,38 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from typing import List, Dict
+from typing import List, Dict, Any, Union
 from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
 
 from ows.common.types import (
     OnlineResource, WGS84BoundingBox, BoundingBox,
-    ServiceCapabilities as CommonServiceCapabilities
+    ServiceCapabilities as CommonServiceCapabilities,
+    Operation as CommonOperation, OperationMethod, HttpMethod
 )
+
+
+@dataclass
+class Operation(CommonOperation):
+    formats: List[str] = field(default_factory=list)
+
+
+DimensionValueType = Union[str, float, int, date, datetime]
+DimensionResolutionType = Union[str, float, int, timedelta]
+
+
+@dataclass
+class Range:
+    start: DimensionValueType
+    stop: DimensionValueType
+    resolution: DimensionResolutionType
 
 
 @dataclass
 class Dimension:
     name: str
     units: str
+    values: Union[List[DimensionValueType], Range] = None
     unit_symbol: str = None
     default: str = None
     multiple_values: bool = None
@@ -51,7 +70,7 @@ class __FormatOnlineResourceBase:
 
 
 @dataclass
-class FormatOnlineResource(__FormatOnlineResourceBase, OnlineResource):
+class FormatOnlineResource(OnlineResource, __FormatOnlineResourceBase):
     pass
 
 
@@ -62,7 +81,7 @@ class __LegenURLBase:
 
 
 @dataclass
-class LegendURL(__LegenURLBase, FormatOnlineResource):
+class LegendURL(FormatOnlineResource, __LegenURLBase):
     pass
 
 
@@ -71,7 +90,7 @@ class Style:
     name: str
     title: str
     abstract: str = None
-    legend_url: List[LegendURL] = field(default_factory=dict)
+    legend_urls: List[LegendURL] = field(default_factory=dict)
     style_sheet_url: FormatOnlineResource = None
     style_url: FormatOnlineResource = None
 
@@ -107,8 +126,45 @@ class Layer:
 
 @dataclass
 class ServiceCapabilities(CommonServiceCapabilities):
+    operations: List[Operation] = field(default_factory=list)
     exception_formats: List[str] = field(default_factory=list)
     layer: Layer = None
     layer_limit: int = None
     max_width: int = None
     max_height: int = None
+
+    @classmethod
+    def with_defaults(cls, service_url, image_formats, info_formats=None,
+                      **kwargs):
+        if 'exception_formats' not in kwargs:
+            kwargs['exception_formats'] = [
+                'XML', 'INIMAGE', 'BLANK'
+            ]
+        if 'operations' not in kwargs:
+            kwargs['operations'] = [
+                Operation('GetCapabilities',
+                    formats=['text/xml'],
+                    operation_methods=[
+                        OperationMethod(HttpMethod.Get, service_url),
+                        OperationMethod(HttpMethod.Post, service_url),
+                    ]
+                ),
+                Operation('GetMap',
+                    formats=image_formats,
+                    operation_methods=[
+                        OperationMethod(HttpMethod.Get, service_url),
+                    ]
+                ),
+            ]
+
+            if info_formats is not None:
+                kwargs['operations'].append(
+                    Operation('GetFeatureInfo',
+                        formats=info_formats,
+                        operation_methods=[
+                            OperationMethod(HttpMethod.Get, service_url),
+                        ]
+                    )
+                )
+
+        return cls(**kwargs)
