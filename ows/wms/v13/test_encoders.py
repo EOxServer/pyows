@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ows.common.types import WGS84BoundingBox, BoundingBox
 from ..types import (
@@ -136,7 +136,7 @@ def test_encode_capabilities():
                             values=Range(
                                 datetime(2018, 5, 10),
                                 datetime(2018, 5, 12),
-                                'PT1H'
+                                timedelta(hours=1),
                             ),
                             unit_symbol='s',
                             default='',

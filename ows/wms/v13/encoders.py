@@ -89,6 +89,12 @@ def encode_dimension_value(value):
     return str(value)
 
 
+def encode_dimension_resolution(value):
+    if isinstance(value, timedelta):
+        return duration(value)
+    return str(value)
+
+
 def encode_dimension(dimension: Dimension):
     value = None
     if isinstance(dimension.values, list):
@@ -99,7 +105,7 @@ def encode_dimension(dimension: Dimension):
         value = '/'.join([
             encode_dimension_value(dimension.values.start),
             encode_dimension_value(dimension.values.stop),
-            str(dimension.values.resolution),
+            encode_dimension_resolution(dimension.values.resolution),
         ])
     return WMS('Dimension',
         value,
