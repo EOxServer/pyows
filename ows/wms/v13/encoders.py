@@ -30,7 +30,8 @@ from datetime import date, datetime, timedelta
 from ows.util import Result, isoformat, duration
 from ..types import (
     ServiceCapabilities, Operation, Layer, Style,
-    Dimension, Range,
+    Dimension, Range, GetMapRequest,
+    DimensionValueType, DimensionResolutionType
 )
 from .namespaces import WMS, ns_xlink
 
@@ -73,13 +74,13 @@ def encode_operation(operation: Operation):
     )
 
 
-def encode_boolean(value):
+def encode_boolean(value: bool):
     if value is None:
         return None
     return 'true' if value else 'false'
 
 
-def encode_dimension_value(value):
+def encode_dimension_value(value: DimensionValueType):
     if isinstance(value, str):
         return value
 
@@ -89,7 +90,7 @@ def encode_dimension_value(value):
     return str(value)
 
 
-def encode_dimension_resolution(value):
+def encode_dimension_resolution(value: DimensionResolutionType):
     if isinstance(value, timedelta):
         return duration(value)
     return str(value)
@@ -322,3 +323,38 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities, **kwargs):
     )
 
     return Result.from_etree(root, **kwargs)
+
+
+def kvp_encode_get_map_request(request: GetMapRequest, swap_coordinates=False):
+    bbox = request.bounding_box.bbox
+    if swap_coordinates:
+        bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+
+    params = [
+        ('service', 'WMS'),
+        ('version', str(request)),
+        ('request', 'GetMap'),
+        ('layers', ','.join(request.layers)),
+        ('styles', ','.join(request.styles)),
+        ('crs', request.bounding_box.crs),
+        ('bbox', ','.join(str(v) for v in bbox)),
+        ('width', str(request.width)),
+        ('height', str(request.height)),
+        ('format', request.format),
+    ]
+
+    if request.transparent is not None:
+        params.append(('transparent', str(request.transparent).upper()))
+    if request.background_color is not None:
+        params.append(('bgcolor', request.background_color))
+    if request.exceptions is not None:
+        params.append(('exceptions', request.exceptions))
+
+    for name, value in request.dimensions.items():
+        lower = name.lower()
+        if lower in ('time', 'elevation'):
+            params.append((lower, value))
+        else:
+            params.append((f'dim_{lower}', value))
+
+    return Result.from_kvp(params)

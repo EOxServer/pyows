@@ -29,6 +29,7 @@ from typing import List, Dict, Union
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
+from ows import Version
 from ows.common.types import (
     OnlineResource, WGS84BoundingBox, BoundingBox,
     ServiceCapabilities as CommonServiceCapabilities,
@@ -168,3 +169,18 @@ class ServiceCapabilities(CommonServiceCapabilities):
                 )
 
         return cls(**kwargs)
+
+
+@dataclass
+class GetMapRequest:
+    version: Version
+    layers: List[str]
+    styles: List[str]
+    bounding_box: BoundingBox
+    width: int
+    height: int
+    format: str
+    transparent: bool = None
+    background_color: str = None
+    exceptions: str = None
+    dimensions: dict = field(default_factory=dict)
