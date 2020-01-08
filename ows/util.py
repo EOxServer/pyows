@@ -62,7 +62,7 @@ class Version:
     #     return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
 
     def __str__(self):
-        if self.patch:
+        if self.patch is not None:
             return f'{self.major}.{self.minor}.{self.patch}'
         return f'{self.major}.{self.minor}'
 
