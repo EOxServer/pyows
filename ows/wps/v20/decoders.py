@@ -34,19 +34,21 @@ from ows.util import Version
 from .namespaces import nsmap
 from .types import (
     DescribeProcessRequest, ExecuteRequest, GetStatusRequest, GetResultRequest,
-    DismissRequest
+    DismissRequest,
+    ExecutionMode, ResponseType, Input, Data, Reference, OutputDefinition,
+    TransmissionType,
 )
 
 
 # ------------------------------------------------------------------------------
-# DescribeCoverage
+# DescribeProcess
 # ------------------------------------------------------------------------------
 
 
 class KVPDescribeProcessDecoder(kvp.Decoder):
     object_class = DescribeProcessRequest
     version = kvp.Parameter(type=Version.from_str, num=1)
-    process_ids = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
+    process_ids = kvp.Parameter("jobid", type=typelist(str, ","), num=1)
 
 
 class XMLDescribeProcessDecoder(xml.Decoder):
@@ -71,19 +73,97 @@ def xml_decode_describe_process(xml) -> DescribeProcessRequest:
 # ------------------------------------------------------------------------------
 
 def parse_data_input(input_elem):
-    pass
+    decoder = XMLInputDecoder(input_elem)
+    return Input(
+        identifier=decoder.identifier,
+        data=decoder.data or decoder.reference,
+        inputs=[
+            input_ for input_ in decoder.inputs
+        ] if decoder.inputs else None,
+    )
+
+
+class XMLDataDecoder(xml.Decoder):
+    mime_type = xml.Parameter('@mimeType', num='?')
+    encoding = xml.Parameter('@encoding', num='?')
+    schema = xml.Parameter('@schema', num='?')
+
+
+def parse_data(data_elem):
+    decoder = XMLDataDecoder(data_elem)
+    if len(data_elem) == 0:
+        value = data_elem.text
+    else:
+        value = list(data_elem)
+
+    return Data(
+        value=value,
+        mime_type=decoder.mime_type,
+        encoding=decoder.encoding,
+        schema=decoder.schema,
+    )
+
+
+def parse_reference_body(body_elem):
+    if len(body_elem):
+        # TODO: convert to string
+        raise NotImplementedError
+    else:
+        return body_elem.text
+
+
+class XMLReferenceDecoder(xml.Decoder):
+    object_class = Reference
+    href = xml.Parameter('@xlink:href', num='?')
+    body = xml.Parameter('wps:Body', type=parse_reference_body, num='?')
+    body_reference_href = xml.Parameter('wps:BodyReference/@xlink:href', num='?')
+    mime_type = xml.Parameter('@mimeType', num='?')
+    encoding = xml.Parameter('@encoding', num='?')
+    schema = xml.Parameter('@schema', num='?')
+    namespaces = nsmap
+
+
+def parse_reference(reference_elem):
+    return XMLReferenceDecoder(reference_elem).decode()
+
+
+class XMLInputDecoder(xml.Decoder):
+    identifier = xml.Parameter('@id', num=1)
+    data = xml.Parameter('wps:Data', type=parse_data, num='?')
+    reference = xml.Parameter('wps:Reference', type=parse_reference, num='?')
+    inputs = xml.Parameter('wps:Input', type=parse_data_input, num='*')
+    namespaces = nsmap
 
 
 def parse_output_def(output_elem):
-    pass
+    decoder = XMLOutputDefinitionDecoder(output_elem)
+    return decoder.decode()
+
+
+class XMLOutputDefinitionDecoder(xml.Decoder):
+    object_class = OutputDefinition
+    identifier = xml.Parameter('@id', num=1)
+    output_definitions = xml.Parameter('wps:Output', type=parse_output_def, num='*')
+    mime_type = xml.Parameter('@mimeType', num='?')
+    encoding = xml.Parameter('@encoding', num='?')
+    schema = xml.Parameter('@schema', num='?')
+    transmission = xml.Parameter('@transmission', type=TransmissionType, num='?')
+    namespaces = nsmap
+
+    def map_params(self, params):
+        if not params['output_definitions']:
+            params['output_definitions'] = None
+        return params
 
 
 class XMLExecuteDecoder(xml.Decoder):
     object_class = ExecuteRequest
     version = xml.Parameter("@version", type=Version.from_str, num=1)
     process_id = xml.Parameter("ows:Identifier/text()", num=1)
+    mode = xml.Parameter('@mode', type=ExecutionMode, num=1)
+    response = xml.Parameter('@response', type=ResponseType, num=1)
     inputs = xml.Parameter('wps:Input', type=parse_data_input, num='*')
-    outputs = xml.Parameter('wps:Output', type=parse_output_def, num='+')
+    output_definitions = xml.Parameter('wps:Output', type=parse_output_def, num='+')
     namespaces = nsmap
 
 
@@ -99,7 +179,7 @@ def xml_decode_execute(xml):
 class KVPGetStatusDecoder(kvp.Decoder):
     object_class = GetStatusRequest
     version = kvp.Parameter(type=Version.from_str, num=1)
-    job_id = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
+    job_id = kvp.Parameter("jobid", type=typelist(str, ","), num=1)
 
 
 class XMLGetStatusDecoder(xml.Decoder):
@@ -126,7 +206,7 @@ def xml_decode_get_status(xml) -> GetStatusRequest:
 class KVPGetResultDecoder(kvp.Decoder):
     object_class = GetResultRequest
     version = kvp.Parameter(type=Version.from_str, num=1)
-    job_id = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
+    job_id = kvp.Parameter("jobid", type=typelist(str, ","), num=1)
 
 
 class XMLGetResultDecoder(xml.Decoder):
@@ -153,7 +233,7 @@ def xml_decode_get_result(xml) -> GetResultRequest:
 class KVPDismissDecoder(kvp.Decoder):
     object_class = DismissRequest
     version = kvp.Parameter(type=Version.from_str, num=1)
-    job_id = kvp.Parameter("coverageid", type=typelist(str, ","), num=1)
+    job_id = kvp.Parameter("jobid", type=typelist(str, ","), num=1)
 
 
 class XMLDismissDecoder(xml.Decoder):

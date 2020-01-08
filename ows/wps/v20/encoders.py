@@ -25,19 +25,21 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import List
+from typing import List, Union
 
 from ows.util import Result, isoformat
-from .namespaces import WPS
+from .namespaces import WPS, ns_xlink
 from .types import (
     DescribeProcessRequest, ExecuteRequest, GetStatusRequest,
-    GetResultRequest, DismissRequest,
+    GetResultRequest, DismissRequest, Input, OutputDefinition,
+    Data, Reference
 )
 from ..types import (
     ServiceCapabilities, ProcessSummary, ProcessDescription,
     InputDescription, OutputDescription, DataDescriptionTypes,
     LiteralDataDescription, BoundingBoxDataDescription,
-    ComplexDataDescription, Format, Domain, StatusInfo
+    ComplexDataDescription, Format, Domain, StatusInfo,
+    ValueType, ValueRange
 )
 from ows.common.v20.encoders import (
     OWS, encode_service_provider, encode_service_identification,
@@ -57,7 +59,7 @@ def kvp_encode_describe_process(request: DescribeProcessRequest, **kwargs):
     )
 
 
-def xml_encode_describe_process(request: DescribeCoverageRequest, **kwargs):
+def xml_encode_describe_process(request: DescribeProcessRequest, **kwargs):
     root = WPS('DescribeProcess',
         *[
             OWS('Identifier', identifier)
@@ -69,10 +71,74 @@ def xml_encode_describe_process(request: DescribeCoverageRequest, **kwargs):
     return Result.from_etree(root, **kwargs)
 
 
+def encode_data(data: Data):
+    return WPS('Data',
+        data.value,
+        mimeType=data.mime_type,
+        encoding=data.encoding,
+        schema=data.schema,
+    )
+
+
+def encode_reference(ref: Reference):
+    elem = WPS('Reference',
+        mimeType=ref.mime_type,
+        encoding=ref.encoding,
+        schema=ref.schema,
+        **{
+            ns_xlink('href'): ref.href,
+        }
+    )
+    if ref.body:
+        elem.append(WPS('Body', ref.body))
+    elif ref.body_reference_href:
+        elem.append(
+            WPS('BodyReference', **{
+                ns_xlink('href'): ref.body_reference_href,
+            })
+        )
+    return elem
+
+
+def encode_input(input_: Input):
+    if isinstance(input_.data, Data):
+        contents = [encode_data(input_.data)]
+    elif isinstance(input_.data, Reference):
+        contents = [encode_reference(input_.data)]
+    elif input_.inputs:
+        contents = [
+            encode_input(sub_input)
+            for sub_input in input_.inputs
+        ]
+    return WPS('Input', *contents,
+        id=input_.identifier,
+    )
+
+
+def encode_output(output: OutputDefinition):
+    return WPS('Output', *[
+            encode_output(sub_output)
+            for sub_output in output.output_definitions or []
+        ],
+        id=output.identifier,
+        mimeType=output.mime_type,
+        encoding=output.encoding,
+        schema=output.schema,
+        transmission=output.transmission.value,
+    )
+
+
 def xml_encode_execute(request: ExecuteRequest, **kwargs):
-    root = WPS('DescribeProcess',
-        OWS('Identifier', request.process_id),
-        # TODO
+    root = WPS('Execute',
+        OWS('Identifier', request.process_id), *[
+            encode_input(input_)
+            for input_ in request.inputs
+        ] + [
+            encode_output(output)
+            for output in request.output_definitions
+        ],
+        response=request.response.value,
+        mode=request.mode.value,
         service='WPS',
         version=str(request.version),
     )
@@ -239,7 +305,7 @@ def encode_format(format_: Format, default=False):
         schema=format_.schema,
         maximumMegabytes=str(
             format_.maxmimum_megabytes
-        ) if format_.maxmimum_megabytes else None
+        ) if format_.maxmimum_megabytes else None,
         default='true' if default else 'false'
     )
 
@@ -265,7 +331,7 @@ def encode_domain(domain: Domain, default=False):
     return WPS('LiteralDataDomain',
         encode_allowed_values(
             domain.allowed_values
-        ) if domain.allowed_values else OWS('AnyValue')
+        ) if domain.allowed_values else OWS('AnyValue'),
         OWS('DataType', domain.data_type) if domain.data_type else None,
         OWS('UOM', domain.uom) if domain.uom else None,
         OWS('DefaultValue',
@@ -300,25 +366,25 @@ def encode_data_description(data_description: DataDescriptionTypes):
         return WPS('ComplexDataType', *formats)
 
 
-def encode_input(input_description: InputDescription):
+def encode_input_description(input_description: InputDescription):
     elem = encode_description_type('Input', input_description)
     if input_description.data_description:
         elem.append(encode_data_description)
     elif input_description.inputs:
         elem.extend([
-            encode_input(sub_input_description)
+            encode_input_description(sub_input_description)
             for sub_input_description in input_description.inputs
         ])
     return elem
 
 
-def encode_output(output_description: OutputDescription):
+def encode_output_description(output_description: OutputDescription):
     elem = encode_description_type('Output', output_description)
     if output_description.data_description:
         elem.append(encode_data_description)
     elif output_description.inputs:
         elem.extend([
-            encode_input(sub_output_description)
+            encode_input_description(sub_output_description)
             for sub_output_description in output_description.inputs
         ])
     return elem
@@ -327,11 +393,11 @@ def encode_output(output_description: OutputDescription):
 def encode_process(process_description: ProcessDescription):
     elem = encode_description_type('Process', process_description)
     elem.extend([
-        encode_input(input_)
+        encode_input_description(input_)
         for input_ in process_description.inputs
     ])
     elem.extend([
-        encode_output(output)
+        encode_output_description(output)
         for output in process_description.outputs
     ])
 

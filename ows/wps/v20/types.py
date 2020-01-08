@@ -94,7 +94,7 @@ class OutputDefinition:
     mime_type: str = None
     encoding: str = None
     schema: str = None
-    outputs: List['OutputDefinition'] = None
+    output_definitions: List['OutputDefinition'] = None
 
 
 @dataclass
@@ -103,6 +103,7 @@ class ExecuteRequest:
     mode: ExecutionMode
     response: ResponseType
     inputs: List[Input] = field(default_factory=list)
+    output_definitions: List[OutputDefinition] = field(default_factory=list)
     version: Version = Version(2, 0, 0)
 
 

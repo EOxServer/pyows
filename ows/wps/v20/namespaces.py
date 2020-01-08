@@ -35,6 +35,6 @@ from ows.common.v20.namespaces import ns_ows, ns_xlink
 ns_wps = NameSpace("http://www.opengis.net/wps/2.0", "wps")
 
 
-nsmap = NameSpaceMap(ns_wps, ns_ows)
+nsmap = NameSpaceMap(ns_wps, ns_ows, ns_xlink)
 
 WPS = ElementMaker(namespace=ns_wps.uri, nsmap=nsmap)
