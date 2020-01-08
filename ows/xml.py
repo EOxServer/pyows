@@ -222,6 +222,8 @@ class Decoder(BaseDecoder):
                 raise ValueError(
                     "Malformed XML document. Error was %s" % exc
                 ) from exc
+        elif isinstance(tree, etree._Element):
+            pass
         else:
             raise ValueError(f'Unsupported type {type(tree)}')
         self._tree = tree
