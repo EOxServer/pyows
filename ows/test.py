@@ -29,8 +29,9 @@ from typing import Union
 from textwrap import dedent
 from collections import defaultdict
 
-from lxml.etree import ElementTree, Element
+from lxml.etree import ElementTree, Element, _Comment
 from lxml import etree
+
 
 def assert_xml_equal(xml_a: str, xml_b: str):
     assert_elements_equal(
@@ -38,25 +39,46 @@ def assert_xml_equal(xml_a: str, xml_b: str):
     )
 
 
-def assert_trees_equal(tree_a: ElementTree, tree_b: ElementTree):
-    pass
+def strip_common_attribs(attrib):
+    attrib.pop(
+        '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', None
+    )
+    return attrib
 
 
-def assert_elements_equal(elem_a, elem_b, path=''):
+def strip_elements(elements):
+    return [
+        element
+        for element in elements
+        if not isinstance(element, _Comment)
+    ]
+
+
+def assert_elements_equal(elem_a, elem_b, path='/'):
     q_a = etree.QName(elem_a.tag)
     q_b = etree.QName(elem_b.tag)
     assert q_a.localname == q_b.localname, \
-        f'Tag name differs at {path}: {q_a.localname} != {q_b.localname}'
+        f'Tag name differs at {path!r}: {q_a.localname} != {q_b.localname}'
     assert q_a.namespace == q_b.namespace, \
-        f'Namespace differs at {path}: {q_a.namespace} != {q_b.namespace}'
-    assert elem_a.text == elem_b.text, \
-        f'Text differs at {path}: {elem_a.text!r} != {elem_b.text!r}'
+        f'Namespace differs at {path!r}: {q_a.namespace} != {q_b.namespace}'
 
-    assert elem_a.attrib == elem_b.attrib, f'Attributes mismatch at {path}'
+    text_a = elem_a.text.strip() if elem_a.text is not None else ''
+    text_b = elem_b.text.strip() if elem_b.text is not None else ''
+    assert text_a == text_b, \
+        f'Text differs at {path!r}: {text_a!r} != {text_b!r}'
+
+    attrib_a = strip_common_attribs(elem_a.attrib)
+    attrib_b = strip_common_attribs(elem_b.attrib)
+
+    assert attrib_a == attrib_b, \
+        f'Attributes mismatch at {path!r}: {attrib_a!r} != {attrib_b!r}'
 
     tag_counts = defaultdict(lambda: 0)
 
-    for i, subelements in enumerate(zip(elem_a, elem_b), start=1):
+    subs_a = strip_elements(elem_a)
+    subs_b = strip_elements(elem_b)
+
+    for i, subelements in enumerate(zip(subs_a, subs_b), start=1):
         sub_a, sub_b = subelements
         q_s = etree.QName(sub_a.tag)
         # localname = q_s.localname
@@ -64,14 +86,20 @@ def assert_elements_equal(elem_a, elem_b, path=''):
         count = tag_counts[sub_a.tag]
         assert_elements_equal(
             sub_a, sub_b,
-            path=f'{path}/{sub_a.prefix}:{q_s.localname}[{count}]'
+            path=f'{path!r}/{sub_a.prefix}:{q_s.localname}[{count}]'
         )
 
-    if len(elem_a) > len(elem_b):
-        raise AssertionError(f'Element A at {path} has additional children.')
+    if len(subs_a) > len(subs_b):
+        elems = subs_a[len(elem_b):]
+        raise AssertionError(
+            f'Element A at {path!r} has additional children: {elems!r}'
+        )
 
-    elif len(elem_a) < len(elem_b):
-        raise AssertionError(f'Element B at {path} has additional children.')
+    elif len(subs_a) < len(subs_b):
+        elems = subs_b[len(subs_a):]
+        raise AssertionError(
+            f'Element B at {path!r} has additional children: {elems!r}'
+        )
 
 
 # def test_assertion():
