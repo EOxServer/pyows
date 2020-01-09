@@ -43,8 +43,7 @@ from ..types import (
 )
 from ows.common.v20.encoders import (
     OWS, encode_service_provider, encode_service_identification,
-    encode_operations_metadata,
-    encode_wgs84_bounding_box, encode_bounding_box, encode_metadata
+    encode_operations_metadata
 )
 
 
@@ -183,7 +182,6 @@ def xml_encode_get_result(request: GetResultRequest, **kwargs):
         version=str(request.version),
     )
     return Result.from_etree(root, **kwargs)
-
 
 
 def kvp_encode_dismiss(request: DismissRequest, **kwargs):

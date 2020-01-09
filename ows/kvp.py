@@ -29,7 +29,7 @@
 """
 
 from urllib.parse import parse_qs
-from typing import Iterable, Sequence
+from typing import Iterable
 
 from .decoder import BaseParameter, BaseDecoder, NO_DEFAULT
 

@@ -27,10 +27,12 @@
 
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Sequence, Dict, Union, Tuple
 from urllib.parse import urlencode
 
 from lxml import etree
+
+from .xml import ElementTree
 
 
 @dataclass(eq=True, order=True, frozen=True)
@@ -58,9 +60,6 @@ class Version:
             return True
         return False
 
-    # def __lt__(self, other):
-    #     return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
-
     def __str__(self):
         if self.patch is not None:
             return f'{self.major}.{self.minor}.{self.patch}'
@@ -71,13 +70,16 @@ class Version:
         return cls(*[int(part) for part in value.split('.')])
 
 
+ItemsLike = Union[Dict, Sequence[Tuple[str, str]]]
+
+
 @dataclass
 class Result:
     value: Any
     content_type: str = None
 
     @classmethod
-    def from_kvp(cls, params,
+    def from_kvp(cls, params: ItemsLike,
                  content_type='application/x-www-form-urlencoded'):
         return cls(
             value=urlencode(params),
@@ -85,14 +87,15 @@ class Result:
         )
 
     @classmethod
-    def from_etree(cls, tree, content_type='application/xml', **kwargs):
+    def from_etree(cls, tree: ElementTree, content_type='application/xml',
+                   **kwargs):
         return cls(
             value=etree.tostring(tree, **kwargs),
             content_type=content_type,
         )
 
 
-def isoformat(dt: datetime, zulu=True):
+def isoformat(dt: datetime, zulu=True) -> str:
     ''' Formats a datetime object to an ISO string. Timezone naive datetimes are
         are treated as UTC Zulu. UTC Zulu is expressed with the proper 'Z'
         ending and not with the '+00:00' offset declaration.
@@ -107,7 +110,7 @@ def isoformat(dt: datetime, zulu=True):
     return dt.isoformat('T')
 
 
-def duration(td: timedelta):
+def duration(td: timedelta) -> str:
     ''' Encode a timedelta as an ISO 8601 duration string.
     '''
     # TODO: better implementation with days, hours, minutes, seconds

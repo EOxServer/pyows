@@ -25,6 +25,8 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
+# flake8: noqa
+
 from textwrap import dedent
 
 from .encoders import xml_encode_execute

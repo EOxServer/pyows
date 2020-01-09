@@ -25,10 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from ows.xml import NameSpace, NameSpaceMap, ElementMaker, ns_xsi
-from ows.common.v20.namespaces import ns_ows, ns_xlink
-from ows.gml.v32 import ns_om, ns_gml, ns_gmlcov, ns_eop
-
+from ows.xml import NameSpace, NameSpaceMap, ElementMaker
 from ows.common.v20.namespaces import ns_ows, ns_xlink
 
 

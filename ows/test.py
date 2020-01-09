@@ -25,11 +25,9 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from typing import Union
-from textwrap import dedent
 from collections import defaultdict
 
-from lxml.etree import ElementTree, Element, _Comment
+from lxml.etree import _Comment
 from lxml import etree
 
 
