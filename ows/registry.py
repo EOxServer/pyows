@@ -27,6 +27,7 @@
 
 from ows.xml import NameSpace
 
+
 class Registry:
     def __init__(self):
         self.kvp_decoders = {}
