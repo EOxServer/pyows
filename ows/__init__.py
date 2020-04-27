@@ -29,4 +29,4 @@ from .util import Version
 
 __all__ = ['Version', '__version__']
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
