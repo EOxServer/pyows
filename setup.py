@@ -38,7 +38,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 # from https://github.com/mapbox/rasterio/blob/master/setup.py#L55
 with open(os.path.join(os.path.dirname(__file__), 'ows/__init__.py')) as f:
     for line in f:
-        if line.find("__version__") >= 0:
+        if line.startswith("__version__"):
             version = line.split("=")[1].strip()
             version = version.strip('"')
             version = version.strip("'")
