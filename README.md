@@ -1,5 +1,6 @@
 # pyows
 [![Build Status](https://travis-ci.org/EOxServer/pyows.svg?branch=master)](https://travis-ci.org/EOxServer/pyows)
+[![PyPI version](https://badge.fury.io/py/pyows.svg)](https://badge.fury.io/py/pyows)
 
 `pyows` is a library to help building an OWS compatible service or client. It helps building requests and parsing them and also provides object types to be serialized and sent as responses.
 
@@ -43,7 +44,7 @@ The other way around:
 ...     coverage_id='a',
 ...     subsets=[
 ...         Trim(dimension='x', low=1.2, high=2.2),
-...         Trim(dimension='x', low=3),
+...         Trim(dimension='y', low=3),
 ...         Slice(dimension='time', point='2018-05-07')
 ...     ]
 ... )
@@ -56,7 +57,7 @@ The other way around:
     <wcs:TrimHigh>2.2</wcs:TrimHigh>
   </wcs:DimensionTrim>
   <wcs:DimensionTrim>
-    <wcs:Dimension>x</wcs:Dimension>
+    <wcs:Dimension>y</wcs:Dimension>
     <wcs:TrimLow>3</wcs:TrimLow>
   </wcs:DimensionTrim>
   <wcs:DimensionSlice>
