@@ -27,13 +27,16 @@
 
 # flake8: noqa
 
-from typing import List
+from typing import List, Union
 
 from .namespaces import OWS, ns_xlink
 from ..types import (
     ServiceCapabilities, Operation, Constraint,
-    WGS84BoundingBox, BoundingBox, Metadata
+    WGS84BoundingBox, BoundingBox, Metadata,
+    OWSException, Version
 )
+from ...util import Result
+from ...xml import Comment, Element
 
 
 def reference_attrs(href=None, type=None, role=None, arcrole=None, title=None,
@@ -236,5 +239,30 @@ def encode_metadata(metadata: Metadata):
             arcrole=metadata.arcrole,
             title=metadata.title,
             about=metadata.about,
+        )
+    )
+
+
+def encode_exception(exception: OWSException) -> Element:
+    texts = [exception.text] if isinstance(exception.text, str) else exception.text
+    return OWS('Exception', *[
+            OWS('ExceptionText', text)
+            for text in texts
+        ] if texts is not None else [] + [
+            Comment(exception.traceback) if exception.traceback else None
+        ],
+        exceptionCode=exception.code,
+        locator=exception.locator
+    )
+
+
+def xml_encode_exception_report(exception: Union[OWSException, List[OWSException]], version: Version) -> Result:
+    exceptions = [exception] if isinstance(exception, OWSException) else exception
+    return Result.from_etree(
+        OWS('ExceptionReport', *[
+                encode_exception(exception)
+                for exception in exceptions
+            ],
+            version=str(version)
         )
     )

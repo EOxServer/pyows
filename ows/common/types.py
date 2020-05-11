@@ -149,3 +149,11 @@ class ServiceCapabilities:
 
     # OperationsMetadata fields
     operations: List[Operation] = field(default_factory=list)
+
+
+@dataclass
+class OWSException:
+    code: str
+    locator: str = None
+    text: Union[str, List[str]] = None
+    traceback: str = None

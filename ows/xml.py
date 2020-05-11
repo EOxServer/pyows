@@ -39,6 +39,7 @@ from .decoder import BaseParameter, BaseDecoder, NO_DEFAULT
 # type alias
 Element = etree._Element
 ElementTree = etree._ElementTree
+Comment = etree.Comment
 
 
 class ElementMaker(_ElementMaker):
