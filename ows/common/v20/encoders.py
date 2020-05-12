@@ -256,7 +256,8 @@ def encode_exception(exception: OWSException) -> Element:
     )
 
 
-def xml_encode_exception_report(exception: Union[OWSException, List[OWSException]], version: Version) -> Result:
+def xml_encode_exception_report(exception: Union[OWSException, List[OWSException]],
+                                version: Version) -> Result:
     exceptions = [exception] if isinstance(exception, OWSException) else exception
     return Result.from_etree(
         OWS('ExceptionReport', *[
