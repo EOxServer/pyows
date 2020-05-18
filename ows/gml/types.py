@@ -25,19 +25,30 @@
 # THE SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import Union, List
+from typing import Union, List, Tuple
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta
+from enum import Enum
 
 
 PositionType = Union[str, int, float, datetime, date]
 ResolutionType = Union[str, int, float, timedelta]
 
 
+class SpatioTemporalType(Enum):
+    SPATIAL = 1
+    TEMPORAL = 2
+    OTHER = 3
+
+
 @dataclass
 class IndexAxis:
     index_label: str
     size: int
+
+    @property
+    def limits(self):
+        return 0, self.size - 1
 
 
 @dataclass
@@ -49,6 +60,11 @@ class RegularAxis:
     resolution: ResolutionType
     uom: str
     size: int
+    type: SpatioTemporalType = SpatioTemporalType.SPATIAL
+
+    @property
+    def limits(self):
+        return self.lower_bound, self.upper_bound
 
 
 @dataclass
@@ -57,10 +73,15 @@ class IrregularAxis:
     index_label: str
     positions: List[PositionType]
     uom: str
+    type: SpatioTemporalType = SpatioTemporalType.SPATIAL
 
     @property
     def size(self):
         return len(self.positions)
+
+    @property
+    def limits(self):
+        return self.positions[0], self.positions[-1]
 
 
 AxisType = Union[IndexAxis, RegularAxis, IrregularAxis]

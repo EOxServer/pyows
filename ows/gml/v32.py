@@ -26,13 +26,12 @@
 # ------------------------------------------------------------------------------
 
 
-from typing import Union, List, Tuple, Dict
-from dataclasses import dataclass, field
+from typing import List
 
 from ows.xml import ElementMaker, NameSpace, NameSpaceMap
 from ows.util import isoformat
 from ows.swe.v20 import Field, encode_data_record
-from .types import Grid, RegularAxis, IrregularAxis, IndexAxis
+from .types import Grid, RegularAxis, SpatioTemporalType
 
 
 # namespace declarations
@@ -50,8 +49,41 @@ OM = ElementMaker(namespace=ns_om.uri, nsmap=nsmap)
 EOP = ElementMaker(namespace=ns_eop.uri, nsmap=nsmap)
 
 
-def encode_bounded_by(grid):
-    pass
+def encode_bounded_by(grid: Grid):
+    spatial_axes = [axis for axis in grid.axes if axis.type == SpatioTemporalType.SPATIAL]
+    temporal_axis = next(
+        (axis for axis in grid.axes if axis.type == SpatioTemporalType.TEMPORAL),
+        None
+    )
+
+    lower_coords, upper_coords = zip(*[axis.limits for axis in spatial_axes])
+    lower_corner = GML('lowerCorner', ' '.join(str(v) for v in lower_coords))
+    upper_corner = GML('upperCorner', ' '.join(str(v) for v in upper_coords))
+
+    attrib = {
+        'srsName': grid.srs,
+        'srsDimension': str(len(spatial_axes)),
+        'axisLabels': ' '.join(axis.label for axis in spatial_axes),
+        'uomLabels': ' '.join(axis.uom for axis in spatial_axes),
+        'frame': temporal_axis.uom if temporal_axis else None,
+    }
+
+    if temporal_axis:
+        begin, end = temporal_axis.limits
+        envelope = GML('EnvelopeWithTimePeriod',
+            lower_corner,
+            upper_corner,
+            GML('beginPosition', begin if isinstance(begin, str) else isoformat(begin)),
+            GML('endPosition', end if isinstance(end, str) else isoformat(end)),
+            **attrib,
+        )
+    else:
+        envelope = GML('Envelope',
+            lower_corner,
+            upper_corner,
+            **attrib,
+        )
+    return GML('boundedBy', envelope)
 
 
 def encode_time_period(begin_position, end_position, identifier):
@@ -62,6 +94,7 @@ def encode_time_period(begin_position, end_position, identifier):
             ns_gml('id'): identifier
         }
     )
+
 
 def encode_grid(grid: Grid, identifier: str):
     rectified = all(isinstance(axis, RegularAxis) for axis in grid.axes)
