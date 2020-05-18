@@ -45,7 +45,7 @@ from ows.common.v20.encoders import (
     encode_wgs84_bounding_box, encode_bounding_box, encode_metadata
 )
 from ows.gml.v32 import (
-    ns_gml, encode_time_period, encode_bounded_by, encode_domain_set,
+    GML, ns_gml, encode_time_period, encode_bounded_by, encode_domain_set,
     encode_range_type
 )
 
@@ -492,26 +492,27 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities,
 def xml_encode_coverage_descriptions(coverage_descriptions: List[CoverageDescription], **kwargs):
     root = WCS('CoverageDescriptions', *[
         WCS('CoverageDescription',
-            encode_bounded_by(coverage_description.grid),
-            WCS('CoverageId', coverage_description.identifier),
-            # TODO: metadata
+            GML('description', description.abstract) if description.abstract else None,
+            GML('name', description.title) if description.title else None,
+            encode_bounded_by(description.grid),
+            WCS('CoverageId', description.identifier),
             encode_domain_set(
-                coverage_description.grid,
-                f'{coverage_description.identifier}__grid'
+                description.grid,
+                f'{description.identifier}__grid'
             ),
-            encode_range_type(coverage_description.range_type),
+            encode_range_type(description.range_type),
             WCS('ServiceParameters',
-                WCS('CoverageSubtype', coverage_description.coverage_subtype),
+                WCS('CoverageSubtype', description.coverage_subtype),
                 WCS('CoverageSubtype',
-                    coverage_description.coverage_subtype_parent
-                ) if coverage_description.coverage_subtype_parent else None,
-                WCS('nativeFormat', coverage_description.native_format),
+                    description.coverage_subtype_parent
+                ) if description.coverage_subtype_parent else None,
+                WCS('nativeFormat', description.native_format),
             ),
             **{
-                ns_gml('id'): coverage_description.identifier
+                ns_gml('id'): description.identifier
             }
         )
-        for coverage_description in coverage_descriptions
+        for description in coverage_descriptions
     ])
 
     return Result.from_etree(root, **kwargs)

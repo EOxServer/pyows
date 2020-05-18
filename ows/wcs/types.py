@@ -154,3 +154,5 @@ class CoverageDescription:
     native_format: str
     coverage_subtype: str
     coverage_subtype_parent: str = None
+    title: str = None
+    abstract: str = None

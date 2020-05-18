@@ -28,7 +28,7 @@
 
 from typing import List
 
-from ows.xml import ElementMaker, NameSpace, NameSpaceMap
+from ows.xml import ElementMaker, NameSpace, NameSpaceMap, Element
 from ows.util import isoformat
 from ows.swe.v20 import Field, encode_data_record
 from .types import Grid, RegularAxis, SpatioTemporalType
@@ -49,7 +49,7 @@ OM = ElementMaker(namespace=ns_om.uri, nsmap=nsmap)
 EOP = ElementMaker(namespace=ns_eop.uri, nsmap=nsmap)
 
 
-def encode_bounded_by(grid: Grid):
+def encode_bounded_by(grid: Grid) -> Element:
     spatial_axes = [axis for axis in grid.axes if axis.type == SpatioTemporalType.SPATIAL]
     temporal_axis = next(
         (axis for axis in grid.axes if axis.type == SpatioTemporalType.TEMPORAL),
@@ -86,7 +86,7 @@ def encode_bounded_by(grid: Grid):
     return GML('boundedBy', envelope)
 
 
-def encode_time_period(begin_position, end_position, identifier):
+def encode_time_period(begin_position, end_position, identifier) -> Element:
     return GML('TimePeriod',
         GML('beginPosition', isoformat(begin_position)),
         GML('endPosition', isoformat(end_position)),
@@ -96,7 +96,7 @@ def encode_time_period(begin_position, end_position, identifier):
     )
 
 
-def encode_grid(grid: Grid, identifier: str):
+def encode_grid(grid: Grid, identifier: str) -> Element:
     rectified = all(isinstance(axis, RegularAxis) for axis in grid.axes)
     num_axes = len(grid.axes)
     elem = GML('RectifiedGrid' if rectified else 'Grid',
@@ -136,11 +136,11 @@ def encode_grid(grid: Grid, identifier: str):
     return elem
 
 
-def encode_domain_set(grid: Grid, identifier: str):
+def encode_domain_set(grid: Grid, identifier: str) -> Element:
     return GML('domainSet', encode_grid(grid, identifier))
 
 
-def encode_range_type(range_type: List[Field]):
+def encode_range_type(range_type: List[Field]) -> Element:
     return GMLCOV('rangeType',
         encode_data_record(range_type)
     )
