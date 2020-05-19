@@ -1,0 +1,3 @@
+lxml
+dataclasses
+m2r
