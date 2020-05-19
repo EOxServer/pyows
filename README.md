@@ -1,6 +1,7 @@
 # pyows
 [![Build Status](https://travis-ci.org/EOxServer/pyows.svg?branch=master)](https://travis-ci.org/EOxServer/pyows)
 [![PyPI version](https://badge.fury.io/py/pyows.svg)](https://badge.fury.io/py/pyows)
+[![Documentation Status](https://readthedocs.org/projects/pyows/badge/?version=latest)](https://pyows.readthedocs.io/en/latest/?badge=latest)
 
 `pyows` is a library to help building an OWS compatible service or client. It helps building requests and parsing them and also provides object types to be serialized and sent as responses.
 
