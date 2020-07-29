@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone, time
 from dataclasses import dataclass
 from typing import Any, Sequence, Dict, Union, Tuple
 from urllib.parse import urlencode
@@ -35,6 +35,9 @@ from lxml import etree
 import iso8601
 
 from .xml import ElementTree
+
+
+UTC = timezone.utc
 
 
 @dataclass(eq=True, order=True, frozen=True)
@@ -97,19 +100,49 @@ class Result:
         )
 
 
-def isoformat(dt: datetime, zulu=True) -> str:
-    ''' Formats a datetime object to an ISO string. Timezone naive datetimes are
-        are treated as UTC Zulu. UTC Zulu is expressed with the proper 'Z'
-        ending and not with the '+00:00' offset declaration.
+@dataclass
+class month:
+    year: int
+    month: int
 
-        :param dt: the :class:`datetime.datetime` to encode
+    def __post_init__(self):
+        if not 1 <= self.month <= 12:
+            raise ValueError('month must be in 1..12')
+
+    def isoformat(self):
+        return f'{self.year}-{self.month:02d}'
+
+
+@dataclass
+class year:
+    year: int
+
+    def isoformat(self):
+        return f'{self.year}'
+
+
+Temporals = Union[datetime, date, month, year]
+
+
+def isoformat(temporal: Temporals, zulu=True) -> str:
+    ''' Formats a datetime, date, month or year object to an ISO string.
+        Timezone naive datetimes are treated as UTC Zulu. UTC Zulu is expressed
+        with the proper 'Z' ending and not with the '+00:00' offset declaration.
+
+        :param temporal: the :class:`datetime.datetime`, :class:`datetime.date`,
+                         :class:`month`, or :class:`year` to encode
         :param zulu: whether an offset of zero shall be abbreviated with ``Z``
         :returns: an encoded string
     '''
-    if not dt.utcoffset() and zulu:
-        dt = dt.replace(tzinfo=None)
-        return dt.isoformat('T') + 'Z'
-    return dt.isoformat('T')
+    if isinstance(temporal, datetime):
+        if not temporal.utcoffset() and zulu:
+            temporal = temporal.replace(tzinfo=None)
+            return temporal.isoformat('T') + 'Z'
+        return temporal.isoformat('T')
+    elif isinstance(temporal, (date, month, year)):
+        return temporal.isoformat()
+
+    raise ValueError('invalid temporal value passed')
 
 
 def duration(td: timedelta) -> str:
@@ -122,19 +155,38 @@ def duration(td: timedelta) -> str:
     return f'P{days}T{td.seconds}S'
 
 
-@dataclass
-class month:
-    year: int
-    month: int
+def temporal_bounds(temporal: Temporals) -> Tuple[datetime, datetime]:
+    ''' Calculates the effective temporal bounds of the passed temporal value.
+    '''
+    if isinstance(temporal, datetime):
+        return (temporal, temporal)
+    elif isinstance(temporal, date):
+        return (
+            datetime.combine(temporal, time.min, UTC),
+            datetime.combine(temporal, time.max, UTC)
+        )
+    elif isinstance(temporal, month):
+        temporal = date(temporal.year, temporal.month, 1)
+        if temporal.month == 12:
+            high = temporal.replace(year=temporal.year + 1, month=1)
+        else:
+            high = temporal.replace(month=temporal.month + 1)
 
-    def __post_init__(self):
-        if not 1 <= self.month <= 12:
-            raise ValueError('month must be in 1..12')
+        return (
+            datetime.combine(temporal, time.min, UTC),
+            datetime.combine(high, time.min, UTC) - timedelta.resolution
+        )
+    elif isinstance(temporal, year):
+        return (
+            datetime.combine(date(temporal.year, 1, 1), time.min, UTC),
+            datetime.combine(
+                date(temporal.year + 1, 1, 1),
+                time.min,
+                UTC
+            ) - timedelta.resolution
+        )
 
-
-@dataclass
-class year:
-    year: int
+    raise ValueError('invalid temporal value passed')
 
 
 DATE_RE = re.compile(
@@ -200,7 +252,7 @@ def to_int(d, key, default_to_zero=False, default=None, required=True):
         return int(value)
 
 
-def parse_temporal(value: str) -> Union[datetime, date, month, year]:
+def parse_temporal(value: str) -> Temporals:
     ''' Parses a temporal value to either a datetime, date, month or year construct.
         Valid values are either
     '''
