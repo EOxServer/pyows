@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyows'
-copyright = '2020, Fabian Schindler'
+copyright = '2020, EOX IT Services GmbH'
 author = 'Fabian Schindler'
 
 
