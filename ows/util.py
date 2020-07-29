@@ -25,12 +25,14 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from dataclasses import dataclass
 from typing import Any, Sequence, Dict, Union, Tuple
 from urllib.parse import urlencode
+import re
 
 from lxml import etree
+import iso8601
 
 from .xml import ElementTree
 
@@ -118,3 +120,115 @@ def duration(td: timedelta) -> str:
     days = td.days or ''
     # hours = timedelta(seconds=td.seconds) // timedelta(hours=1)
     return f'P{days}T{td.seconds}S'
+
+
+@dataclass
+class month:
+    year: int
+    month: int
+
+    def __post_init__(self):
+        if not 1 <= self.month <= 12:
+            raise ValueError('month must be in 1..12')
+
+
+@dataclass
+class year:
+    year: int
+
+
+DATE_RE = re.compile(
+    r"""
+    (?P<year>[0-9]{4})
+    (
+        (
+            (-(?P<monthdash>[0-9]{1,2}))
+            |
+            (?P<month>[0-9]{2})
+            (?!$)
+        )
+        (
+            (
+                (-(?P<daydash>[0-9]{1,2}))
+                |
+                (?P<day>[0-9]{2})
+            )
+        )
+    )
+    $
+    """,
+    re.VERBOSE
+)
+
+
+MONTH_RE = re.compile(
+    r'''
+    (?P<year>[0-9]{4})
+    (
+        (-(?P<monthdash>[0-9]{1,2}))
+        |
+        (?P<month>[0-9]{2})
+    )
+    $
+    ''',
+    re.VERBOSE
+)
+
+
+YEAR_RE = re.compile(
+    r'''
+    (?P<year>[0-9]{4})$
+    ''',
+    re.VERBOSE
+)
+
+
+def to_int(d, key, default_to_zero=False, default=None, required=True):
+    """Pull a value from the dict and convert to int
+
+    :param default_to_zero: If the value is None or empty, treat it as zero
+    :param default: If the value is missing in the dict use this default
+
+    """
+    value = d.get(key) or default
+    if (value in ["", None]) and default_to_zero:
+        return 0
+    if value is None:
+        if required:
+            raise iso8601.ParseError("Unable to read %s from %s" % (key, d))
+    else:
+        return int(value)
+
+
+def parse_temporal(value: str) -> Union[datetime, date, month, year]:
+    ''' Parses a temporal value to either a datetime, date, month or year construct.
+        Valid values are either
+    '''
+    m = YEAR_RE.match(value)
+    if m:
+        return year(year=to_int(m.groupdict(), 'year'))
+
+    m = MONTH_RE.match(value)
+    if m:
+        groups = m.groupdict()
+        return month(
+            year=to_int(groups, 'year'),
+            month=to_int(groups, 'month',
+                default=to_int(groups, 'monthdash', required=False)
+            )
+        )
+
+    m = DATE_RE.match(value)
+    if m:
+        groups = m.groupdict()
+        return date(
+            year=to_int(groups, 'year'),
+            month=to_int(groups, 'month',
+                default=to_int(groups, 'monthdash', required=False)
+            ),
+            day=to_int(groups, 'day',
+                default=to_int(groups, 'daydash', required=False)
+            )
+        )
+
+    return iso8601.parse_date(value)
