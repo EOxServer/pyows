@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from datetime import datetime, date, timedelta, timezone, time
+from datetime import datetime, date, timedelta, timezone, time, MINYEAR, MAXYEAR
 from dataclasses import dataclass
 from typing import Any, Sequence, Dict, Union, Tuple
 from urllib.parse import urlencode
@@ -100,25 +100,52 @@ class Result:
         )
 
 
-@dataclass
+@dataclass(eq=True, order=True, frozen=True)
 class month:
     year: int
     month: int
 
     def __post_init__(self):
+        if not MINYEAR <= self.year <= MAXYEAR:
+            raise ValueError(f'year must be in {MINYEAR}..{MAXYEAR}')
+
         if not 1 <= self.month <= 12:
             raise ValueError('month must be in 1..12')
 
-    def isoformat(self):
+    def __str__(self) -> str:
         return f'{self.year}-{self.month:02d}'
 
+    def isoformat(self) -> str:
+        return str(self)
 
-@dataclass
+    def replace(self, year: int, month: int) -> 'month':
+        return type(self)(year, month)
+
+
+month.min = month(MINYEAR, 1)
+month.max = month(MAXYEAR, 12)
+
+
+@dataclass(eq=True, order=True, frozen=True)
 class year:
     year: int
 
-    def isoformat(self):
+    def __post_init__(self):
+        if not MINYEAR <= self.year <= MAXYEAR:
+            raise ValueError(f'year must be in {MINYEAR}..{MAXYEAR}')
+
+    def __str__(self) -> str:
         return f'{self.year}'
+
+    def isoformat(self) -> str:
+        return str(self)
+
+    def replace(self, year: int) -> 'year':
+        return type(self)(year)
+
+
+year.min = year(MINYEAR)
+year.max = year(MAXYEAR)
 
 
 Temporals = Union[datetime, date, month, year]

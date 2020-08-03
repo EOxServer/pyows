@@ -27,12 +27,41 @@
 
 from datetime import timedelta, timezone, datetime, date
 
+import pytest
+
 from .util import isoformat, temporal_bounds, parse_temporal, month, year
 
 
 M_ONE_HOUR = timezone(-timedelta(seconds=60 * 60))
 P_ONE_HOUR = timezone(timedelta(seconds=60 * 60))
 UTC = timezone.utc
+
+
+def test_month():
+    with pytest.raises(ValueError):
+        month(0, 1)
+
+    with pytest.raises(ValueError):
+        month(10000, 1)
+
+    with pytest.raises(ValueError):
+        month(1, 0)
+
+    with pytest.raises(ValueError):
+        month(1, 13)
+
+    assert month(1, 1) < month(1, 2)
+    assert month(1, 1) < month(2, 1)
+
+
+def test_year():
+    with pytest.raises(ValueError):
+        year(0)
+
+    with pytest.raises(ValueError):
+        year(10000)
+
+    assert year(1) < year(2)
 
 
 def test_isoformat():
