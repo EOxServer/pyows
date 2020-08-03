@@ -1,11 +1,6 @@
 ows.swe package
 ===============
 
-.. automodule:: ows.swe
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -26,3 +21,10 @@ ows.swe.v20 module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.swe
+    :members:
+    :undoc-members:
+    :show-inheritance:

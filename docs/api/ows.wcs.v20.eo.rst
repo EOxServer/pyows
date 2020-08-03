@@ -1,11 +1,6 @@
 ows.wcs.v20.eo package
 ======================
 
-.. automodule:: ows.wcs.v20.eo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -34,3 +29,10 @@ ows.wcs.v20.eo.objects module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wcs.v20.eo
+    :members:
+    :undoc-members:
+    :show-inheritance:

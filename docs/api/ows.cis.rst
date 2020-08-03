@@ -1,11 +1,6 @@
 ows.cis package
 ===============
 
-.. automodule:: ows.cis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -18,3 +13,10 @@ ows.cis.v11 module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.cis
+    :members:
+    :undoc-members:
+    :show-inheritance:

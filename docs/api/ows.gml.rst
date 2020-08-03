@@ -1,11 +1,6 @@
 ows.gml package
 ===============
 
-.. automodule:: ows.gml
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -26,3 +21,10 @@ ows.gml.v32 module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.gml
+    :members:
+    :undoc-members:
+    :show-inheritance:

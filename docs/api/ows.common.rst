@@ -1,11 +1,6 @@
 ows.common package
 ==================
 
-.. automodule:: ows.common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -41,3 +36,10 @@ ows.common.types module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.common
+    :members:
+    :undoc-members:
+    :show-inheritance:

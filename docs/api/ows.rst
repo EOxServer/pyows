@@ -1,11 +1,6 @@
 ows package
 ===========
 
-.. automodule:: ows
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -62,6 +57,14 @@ ows.test module
     :undoc-members:
     :show-inheritance:
 
+ows.test\_util module
+---------------------
+
+.. automodule:: ows.test_util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ows.util module
 ---------------
 
@@ -79,3 +82,10 @@ ows.xml module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows
+    :members:
+    :undoc-members:
+    :show-inheritance:

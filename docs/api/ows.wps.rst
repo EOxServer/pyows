@@ -1,11 +1,6 @@
 ows.wps package
 ===============
 
-.. automodule:: ows.wps
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -25,3 +20,10 @@ ows.wps.types module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wps
+    :members:
+    :undoc-members:
+    :show-inheritance:

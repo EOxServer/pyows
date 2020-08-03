@@ -1,11 +1,6 @@
 ows.wcs.v21 package
 ===================
 
-.. automodule:: ows.wcs.v21
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -34,3 +29,10 @@ ows.wcs.v21.test\_encoders module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wcs.v21
+    :members:
+    :undoc-members:
+    :show-inheritance:

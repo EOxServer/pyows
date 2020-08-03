@@ -1,11 +1,6 @@
 ows.wms.v13 package
 ===================
 
-.. automodule:: ows.wms.v13
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -33,6 +28,14 @@ ows.wms.v13.namespaces module
     :undoc-members:
     :show-inheritance:
 
+ows.wms.v13.test\_decoders module
+---------------------------------
+
+.. automodule:: ows.wms.v13.test_decoders
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ows.wms.v13.test\_encoders module
 ---------------------------------
 
@@ -42,3 +45,10 @@ ows.wms.v13.test\_encoders module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wms.v13
+    :members:
+    :undoc-members:
+    :show-inheritance:

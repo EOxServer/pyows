@@ -1,11 +1,6 @@
 ows.wcs package
 ===============
 
-.. automodule:: ows.wcs
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -26,3 +21,10 @@ ows.wcs.types module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wcs
+    :members:
+    :undoc-members:
+    :show-inheritance:

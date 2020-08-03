@@ -1,11 +1,6 @@
 ows.wps.v20 package
 ===================
 
-.. automodule:: ows.wps.v20
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -58,3 +53,10 @@ ows.wps.v20.types module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.wps.v20
+    :members:
+    :undoc-members:
+    :show-inheritance:

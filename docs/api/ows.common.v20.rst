@@ -1,11 +1,6 @@
 ows.common.v20 package
 ======================
 
-.. automodule:: ows.common.v20
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -42,3 +37,10 @@ ows.common.v20.test\_encoders module
     :show-inheritance:
 
 
+Module contents
+---------------
+
+.. automodule:: ows.common.v20
+    :members:
+    :undoc-members:
+    :show-inheritance:
