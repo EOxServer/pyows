@@ -116,4 +116,4 @@ class GetCoverageRequest:
     interpolation: str = None
     axis_interpolations: List[AxisInterpolation] = field(default_factory=list)
     range_subset: List[Union[str, RangeInterval]] = None
-    geotiff_encoding_parameters: GeoTIFFEncodingParameters = field(default_factory=GeoTIFFEncodingParameters)
+    geotiff_encoding_parameters: GeoTIFFEncodingParameters = field(default_factory=GeoTIFFEncodingParameters) # noqa
