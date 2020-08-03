@@ -50,7 +50,7 @@ DimensionResolutionType = Union[str, float, int, timedelta]
 class Range:
     start: DimensionValueType
     stop: DimensionValueType
-    resolution: DimensionResolutionType
+    resolution: DimensionResolutionType = None
 
 
 @dataclass
@@ -183,4 +183,44 @@ class GetMapRequest:
     transparent: bool = None
     background_color: str = None
     exceptions: str = None
+    time: List[str] = None
+    elevation: List[int] = None
     dimensions: dict = field(default_factory=dict)
+
+    @property
+    def bbox(self):
+        return self.bounding_box.bbox
+
+    @property
+    def crs(self):
+        return self.bounding_box.crs
+
+
+@dataclass
+class GetFeatureInfoRequest:
+    version: Version
+    layers: List[str]
+    styles: List[str]
+    bounding_box: BoundingBox
+    width: int
+    height: int
+    format: str
+    query_layers: List[str]
+    info_format: str
+    i: int
+    j: int
+    feature_count: int = None
+    transparent: bool = None
+    background_color: str = None
+    exceptions: str = None
+    time: List[str] = None
+    elevation: List[int] = None
+    dimensions: dict = field(default_factory=dict)
+
+    @property
+    def bbox(self):
+        return self.bounding_box.bbox
+
+    @property
+    def crs(self):
+        return self.bounding_box.crs

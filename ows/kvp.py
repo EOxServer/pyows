@@ -27,7 +27,6 @@
 
 """ This module contains facilities to help decoding KVP strings.
 """
-
 from urllib.parse import parse_qs
 from typing import Iterable
 
