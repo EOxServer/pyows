@@ -180,6 +180,7 @@ def encode_layer(layer: Layer):
             ) if layer.wgs84_bounding_box else None
         ] + [
             WMS('BoundingBox',
+                crs=bounding_box.crs,
                 minx=str(bounding_box.bbox[0]),
                 miny=str(bounding_box.bbox[1]),
                 maxx=str(bounding_box.bbox[2]),
@@ -257,7 +258,7 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities, **kwargs):
             ]) if capabilities.keywords else None,
             WMS('OnlineResource', **{
                 **reference_attrs(href=capabilities.online_resource)
-            }) if capabilities.online_resource else None,
+            }),
             WMS('ContactInformation',
                 WMS('ContactPerson',
                     capabilities.individual_name
@@ -325,6 +326,20 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities, **kwargs):
     return Result.from_etree(root, **kwargs)
 
 
+def _encode_dimension(values, value_encoder=str, resolution_encoder=str):
+    values = [values] if not isinstance(values, list) else values
+
+    def encode_value(value):
+        if isinstance(value, Range):
+            if value.resolution is not None:
+                return f'{value_encoder(value.start)}/{value_encoder(value.stop)}/{resolution_encoder(value.resolution)}' # noqa
+            else:
+                return f'{value_encoder(value.start)}/{value_encoder(value.stop)}'
+        return value_encoder(value)
+
+    return ','.join(encode_value(v) for v in values)
+
+
 def kvp_encode_get_map_request(request: GetMapRequest, swap_coordinates=False):
     bbox = request.bounding_box.bbox
     if swap_coordinates:
@@ -332,10 +347,10 @@ def kvp_encode_get_map_request(request: GetMapRequest, swap_coordinates=False):
 
     params = [
         ('service', 'WMS'),
-        ('version', str(request)),
+        ('version', str(request.version)),
         ('request', 'GetMap'),
         ('layers', ','.join(request.layers)),
-        ('styles', ','.join(request.styles)),
+        ('styles', ','.join(s or '' for s in request.styles)),
         ('crs', request.bounding_box.crs),
         ('bbox', ','.join(str(v) for v in bbox)),
         ('width', str(request.width)),
@@ -350,11 +365,14 @@ def kvp_encode_get_map_request(request: GetMapRequest, swap_coordinates=False):
     if request.exceptions is not None:
         params.append(('exceptions', request.exceptions))
 
+    if request.time is not None:
+        params.append(('time', _encode_dimension(request.time, isoformat, duration)))
+
+    if request.elevation is not None:
+        params.append(('elevation', _encode_dimension(request.elevation)))
+
     for name, value in request.dimensions.items():
         lower = name.lower()
-        if lower in ('time', 'elevation'):
-            params.append((lower, value))
-        else:
-            params.append((f'dim_{lower}', value))
+        params.append((f'dim_{lower}', _encode_dimension(value)))
 
     return Result.from_kvp(params)

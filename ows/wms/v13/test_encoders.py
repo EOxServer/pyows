@@ -27,12 +27,14 @@
 
 from datetime import datetime, timedelta
 
+from ows.util import Version, year, month
 from ows.common.types import WGS84BoundingBox, BoundingBox
 from ..types import (
     ServiceCapabilities, FormatOnlineResource, Layer, Style, LegendURL,
-    Dimension, Range
+    Dimension, Range,
+    GetMapRequest, GetFeatureInfoRequest
 )
-from .encoders import xml_encode_capabilities
+from .encoders import xml_encode_capabilities, kvp_encode_get_map_request
 
 
 def test_encode_capabilities():
@@ -159,4 +161,52 @@ def test_encode_capabilities():
             ]
         ),
     )
-    print(xml_encode_capabilities(capabilities, pretty_print=True).value.decode('utf-8'))
+    # print(xml_encode_capabilities(capabilities, pretty_print=True).value.decode('utf-8'))
+
+
+def test_encode_getmap():
+    print(kvp_encode_get_map_request(GetMapRequest(
+        Version(1, 3, 0),
+        layers=['a', 'b', 'c'],
+        styles=['s1', 's2', None],
+        bounding_box=BoundingBox('EPSG:4326', [0, 0, 10, 10]),
+        width=256,
+        height=256,
+        format='image/jpeg',
+        dimensions={}
+    )))
+
+    print(kvp_encode_get_map_request(GetMapRequest(
+        Version(1, 3, 0),
+        layers=['a', 'b', 'c'],
+        styles=['s1', 's2', None],
+        bounding_box=BoundingBox('EPSG:4326', [0, 0, 10, 10]),
+        width=256,
+        height=256,
+        format='image/jpeg',
+        time=Range(year(2012), year(2013)),
+        elevation=1000,
+        dimensions={
+            'wavelength': '2456.2',
+            'pressure': ['123', '234'],
+            'range': [Range('0', '1'), Range('2', '4')]
+        }
+    )))
+
+
+def test_encode_getfeatureinfo():
+    GetFeatureInfoRequest(
+        Version(1, 3, 0),
+        layers=['a', 'b', 'c'],
+        styles=['s1', 's2', None],
+        bounding_box=BoundingBox('EPSG:4326', [0, 0, 10, 10]),
+        width=256,
+        height=256,
+        format='image/jpeg',
+        dimensions={},
+        query_layers=['a', 'b'],
+        info_format='text/xml',
+        i=12,
+        j=12,
+        feature_count=15,
+    )
