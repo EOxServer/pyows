@@ -30,7 +30,7 @@ from ows.xml import ElementMaker, NameSpace, NameSpaceMap, Element
 from ows.common.v20.namespaces import ns_xlink
 
 
-ns_wms = NameSpace("http://www.opengis.net/wms", "wms")
+ns_wms = NameSpace("http://www.opengis.net/wms")
 
 nsmap = NameSpaceMap(ns_wms, ns_xlink)
 
