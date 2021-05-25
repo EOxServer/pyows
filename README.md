@@ -85,6 +85,15 @@ The other way around:
     - 2.1
         - Response encoding for
             - CoverageDescriptions
+- WMS
+    - 1.3:
+        - Request encoding/decoding KVP
+            - GetCapabilities
+            - GetMap
+            - GetFeatureInfo
+        - Response encoding
+            - Capabilities
+
 
 ## Roadmap
 
