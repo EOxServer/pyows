@@ -180,7 +180,7 @@ def encode_layer(layer: Layer):
             ) if layer.wgs84_bounding_box else None
         ] + [
             WMS('BoundingBox',
-                crs=bounding_box.crs,
+                CRS=bounding_box.crs,
                 minx=str(bounding_box.bbox[0]),
                 miny=str(bounding_box.bbox[1]),
                 maxx=str(bounding_box.bbox[2]),
