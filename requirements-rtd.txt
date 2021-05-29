@@ -1,4 +1,0 @@
-lxml
-dataclasses
-iso8601
-m2r
