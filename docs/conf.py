@@ -30,7 +30,11 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'm2r'
+    'sphinx.ext.todo',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.autodoc',
+    'm2r',
+    'sphinxcontrib.apidoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,3 +57,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# apidoc configs:
+apidoc_module_dir = '../ows'
+apidoc_output_dir = 'api'
+# apidoc_excluded_paths = ['tests']
+# apidoc_separate_modules = True
+apidoc_module_first = True
