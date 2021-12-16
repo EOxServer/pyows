@@ -290,6 +290,7 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities,
     root = WPS('Capabilities',
         *sections,
         version="2.0.1",
+        service="WPS",
         updateSequence=capabilities.update_sequence
     )
 
