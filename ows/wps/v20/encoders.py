@@ -399,6 +399,7 @@ def encode_process(process_description: ProcessDescription):
         encode_output_description(output)
         for output in process_description.outputs
     ])
+    return elem
 
 
 def xml_encode_process_offerings(process_descriptions: List[ProcessDescription],
