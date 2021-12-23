@@ -368,7 +368,7 @@ def encode_data_description(data_description: DataDescriptionTypes):
 def encode_input_description(input_description: InputDescription):
     elem = encode_description_type('Input', input_description)
     if input_description.data_description:
-        elem.append(encode_data_description)
+        elem.append(encode_data_description(input_description.data_description))
     elif input_description.inputs:
         elem.extend([
             encode_input_description(sub_input_description)
@@ -380,7 +380,7 @@ def encode_input_description(input_description: InputDescription):
 def encode_output_description(output_description: OutputDescription):
     elem = encode_description_type('Output', output_description)
     if output_description.data_description:
-        elem.append(encode_data_description)
+        elem.append(encode_data_description(output_description.data_description))
     elif output_description.inputs:
         elem.extend([
             encode_input_description(sub_output_description)
