@@ -290,6 +290,7 @@ def xml_encode_capabilities(capabilities: ServiceCapabilities,
     root = WPS('Capabilities',
         *sections,
         version="2.0.1",
+        service="WPS",
         updateSequence=capabilities.update_sequence
     )
 
@@ -367,7 +368,7 @@ def encode_data_description(data_description: DataDescriptionTypes):
 def encode_input_description(input_description: InputDescription):
     elem = encode_description_type('Input', input_description)
     if input_description.data_description:
-        elem.append(encode_data_description)
+        elem.append(encode_data_description(input_description.data_description))
     elif input_description.inputs:
         elem.extend([
             encode_input_description(sub_input_description)
@@ -379,7 +380,7 @@ def encode_input_description(input_description: InputDescription):
 def encode_output_description(output_description: OutputDescription):
     elem = encode_description_type('Output', output_description)
     if output_description.data_description:
-        elem.append(encode_data_description)
+        elem.append(encode_data_description(output_description.data_description))
     elif output_description.inputs:
         elem.extend([
             encode_input_description(sub_output_description)
@@ -398,6 +399,7 @@ def encode_process(process_description: ProcessDescription):
         encode_output_description(output)
         for output in process_description.outputs
     ])
+    return elem
 
 
 def xml_encode_process_offerings(process_descriptions: List[ProcessDescription],

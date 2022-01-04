@@ -48,7 +48,7 @@ from .types import (
 class KVPDescribeProcessDecoder(kvp.Decoder):
     object_class = DescribeProcessRequest
     version = kvp.Parameter(type=Version.from_str, num=1)
-    process_ids = kvp.Parameter("jobid", type=typelist(str, ","), num=1)
+    process_ids = kvp.Parameter("identifier", type=typelist(str, ","), num=1)
 
 
 class XMLDescribeProcessDecoder(xml.Decoder):
