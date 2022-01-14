@@ -27,9 +27,10 @@
 
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import List, Union, Any
+from typing import List, Union, Any, Optional
 
 from ows.util import Version
+from ows.common.types import BoundingBox
 
 
 class GetCapabilitiesRequest:
@@ -59,21 +60,28 @@ class TransmissionType(Enum):
 
 
 @dataclass
+class LiteralValue:
+    value: str
+    data_type: Optional[str] = None
+    uom: Optional[str] = None
+
+
+@dataclass
 class Data:
-    value: Any
-    mime_type: str = None
-    encoding: str = None
-    schema: str = None
+    value: Union[LiteralValue, BoundingBox, Any]
+    mime_type: Optional[str] = None
+    encoding: Optional[str] = None
+    schema: Optional[str] = None
 
 
 @dataclass
 class Reference:
     href: str
-    body: str = None
-    body_reference_href: str = None
-    mime_type: str = None
-    encoding: str = None
-    schema: str = None
+    body: Optional[str] = None
+    body_reference_href: Optional[str] = None
+    mime_type: Optional[str] = None
+    encoding: Optional[str] = None
+    schema: Optional[str] = None
 
 
 @dataclass
@@ -91,9 +99,9 @@ class Input:
 class OutputDefinition:
     identifier: str
     transmission: TransmissionType
-    mime_type: str = None
-    encoding: str = None
-    schema: str = None
+    mime_type: Optional[str] = None
+    encoding: Optional[str] = None
+    schema: Optional[str] = None
     output_definitions: List['OutputDefinition'] = None
 
 

@@ -27,15 +27,19 @@
 
 # flake8: noq
 
+import re
+
 from ows import kvp, xml
+from ows.common.types import BoundingBox
+from ows.common.v20.namespaces import ns_ows
 from ows.decoder import typelist
 from ows.util import Version
 
-from .namespaces import nsmap
+from .namespaces import nsmap, ns_wps
 from .types import (
     DescribeProcessRequest, ExecuteRequest, GetStatusRequest, GetResultRequest,
     DismissRequest,
-    ExecutionMode, ResponseType, Input, Data, Reference, OutputDefinition,
+    ExecutionMode, LiteralValue, ResponseType, Input, Data, Reference, OutputDefinition,
     TransmissionType,
 )
 
@@ -89,10 +93,51 @@ class XMLDataDecoder(xml.Decoder):
     schema = xml.Parameter('@schema', num='?')
 
 
+RE_LITERAL_VALUE = re.compile(r'([^\s@]+)(?:@datatype=([^\s@]+))?(?:@uom=([^\s@]+))?')
+FLOAT_PATTERN = r'[0-9]+(?:.[0-9]*)?'
+RE_BBOX_VALUE = re.compile(
+    f'({FLOAT_PATTERN})(?:,({FLOAT_PATTERN}))?,'
+    f'({FLOAT_PATTERN})(?:,({FLOAT_PATTERN}))?'
+    f'(?:,(.*))?'
+)
+
+
 def parse_data(data_elem):
     decoder = XMLDataDecoder(data_elem)
     if len(data_elem) == 0:
-        value = data_elem.text
+        text = data_elem.text
+        bbox_match = RE_BBOX_VALUE.match(text)
+        literal_match = RE_LITERAL_VALUE.match(text)
+        if bbox_match:
+            groups = bbox_match.groups()
+            bbox = [float(v) for v in groups[:4] if v is not None]
+            crs = groups[4]
+            value = BoundingBox(crs, bbox)
+        elif literal_match:
+            raw_value, data_type, uom = literal_match.groups()
+            value = LiteralValue(raw_value, data_type, uom)
+        else:
+            value = text
+    elif len(data_elem) == 1:
+        child = data_elem[0]
+        if child.tag == ns_wps("LiteralValue"):
+            value = LiteralValue(
+                child.text,
+                child.attrib.get("dataType"),
+                child.attrib.get("uom")
+            )
+        elif child.tag == ns_ows("BoundingBox"):
+            lower_corner = child.xpath("ows:LowerCorner", namespaces=nsmap)[0].text
+            upper_corner = child.xpath("ows:UpperCorner", namespaces=nsmap)[0].text
+            value = BoundingBox(
+                child.attrib.get("crs"),
+                [
+                    float(v)
+                    for v in lower_corner.split() + upper_corner.split()
+                ]
+            )
+        else:
+            value = list(data_elem)
     else:
         value = list(data_elem)
 
