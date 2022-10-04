@@ -93,7 +93,7 @@ class XMLDataDecoder(xml.Decoder):
     schema = xml.Parameter('@schema', num='?')
 
 
-RE_LITERAL_VALUE = re.compile(r'([^\s@]+)(?:@datatype=([^\s@]+))?(?:@uom=([^\s@]+))?')
+RE_LITERAL_VALUE = re.compile(r'([^@]+)(?:@datatype=([^@]+))?(?:@uom=([^@]+))?')
 FLOAT_PATTERN = r'[0-9]+(?:.[0-9]*)?'
 RE_BBOX_VALUE = re.compile(
     f'({FLOAT_PATTERN})(?:,({FLOAT_PATTERN}))?,'
@@ -115,7 +115,11 @@ def parse_data(data_elem):
             value = BoundingBox(crs, bbox)
         elif literal_match:
             raw_value, data_type, uom = literal_match.groups()
-            value = LiteralValue(raw_value, data_type, uom)
+            value = LiteralValue(
+                raw_value.strip(),
+                data_type.strip() if data_type else None,
+                uom.strip() if uom else None
+            )
         else:
             value = text
     elif len(data_elem) == 1:
