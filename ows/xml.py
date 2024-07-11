@@ -28,7 +28,7 @@
 """ This module contains facilities to help decoding XML structures.
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from lxml import etree
 from lxml.builder import ElementMaker as _ElementMaker
@@ -46,7 +46,7 @@ class ElementMaker(_ElementMaker):
     ''' Subclass of the original ElementMaker that automatically filters out
         None values in sub-elements and attributes.
     '''
-    def __call__(self, tag: str, *args: List[Optional[Element]],
+    def __call__(self, tag: str, *args: List[Union[Optional[Element], str]],
                  **kwargs: Dict[str, Optional[str]]) -> Element:
         return super().__call__(tag, *[
             arg
